@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package catalogpb;
+
+option go_package="catalogpb;catalogpb";
+
+message Product {
+  int32 Id = 1;
+  string Name = 2;
+  double Price = 3;
+  int32 Stocks = 4;
+}
+
+message ProductId {
+  int32 Id = 1;
+}
+
+service Catalog {
+  rpc GetProduct(ProductId) returns (Product);
+}
