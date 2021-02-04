@@ -4,7 +4,7 @@ import (
 	"user/cache"
 	"user/jwtauth"
 	"user/logger"
-	"user/profile"
+	"user/core"
 	"user/repo/mysql"
 	"user/route"
 )
@@ -20,7 +20,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	service := profile.NewService(
+	service := core.NewService(
 		dbRepo,
 		cache.Redis("localhost"),
 		jwtauth.New(),

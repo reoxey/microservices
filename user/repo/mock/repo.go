@@ -3,15 +3,14 @@ package mock
 import (
 	"context"
 
-	"user/profile"
+	"user/core"
 )
 
 type repo struct {
-
 }
 
-func (r repo) All(ctx context.Context) (profile.Users, error) {
-	return []profile.User{
+func (r repo) All(ctx context.Context) (core.Users, error) {
+	return []core.User{
 		{
 			Id:       1,
 			Name:     "One",
@@ -29,8 +28,8 @@ func (r repo) All(ctx context.Context) (profile.Users, error) {
 	}, nil
 }
 
-func (r repo) ByID(ctx context.Context, i int) (profile.User, error) {
-	return profile.User{
+func (r repo) ByID(ctx context.Context, i int) (core.User, error) {
+	return core.User{
 		Id:       i,
 		Name:     "One",
 		Email:    "one@test.com",
@@ -39,11 +38,11 @@ func (r repo) ByID(ctx context.Context, i int) (profile.User, error) {
 	}, nil
 }
 
-func (r repo) Add(ctx context.Context, user *profile.User) (int, error) {
+func (r repo) Add(ctx context.Context, user *core.User) (int, error) {
 	return 0, nil
 }
 
-func (r repo) Edit(ctx context.Context, user *profile.User) error {
+func (r repo) Edit(ctx context.Context, user *core.User) error {
 	return nil
 }
 
@@ -51,6 +50,6 @@ func (r repo) Authenticate(ctx context.Context, email, pass string) (int, bool, 
 	return 0, true, nil
 }
 
-func NewMock() profile.UserRepo {
+func NewMock() core.UserRepo {
 	return &repo{}
 }

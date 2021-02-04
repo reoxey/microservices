@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"strings"
 
-	"user/profile"
+	"user/core"
 )
 
-func (m mysqlRepo) All(ctx context.Context) (profile.Users, error) {
+func (m mysqlRepo) All(ctx context.Context) (core.Users, error) {
 	rows, err := m.db.QueryContext(ctx, "SELECT id, name, email, is_admin, joined_at FROM "+m.table+" WHERE 1")
 	if err != nil {
 		return nil, err
 	}
 
-	var users []profile.User
+	var users []core.User
 	for rows.Next() {
-		var user profile.User
+		var user core.User
 
 		if err = rows.Scan(&user.Id, &user.Name, &user.Email, &user.IsAdmin, &user.JoinedAt); err != nil {
 			return users, err
@@ -28,9 +28,9 @@ func (m mysqlRepo) All(ctx context.Context) (profile.Users, error) {
 	return users, nil
 }
 
-func (m mysqlRepo) ByID(ctx context.Context, id int) (profile.User, error) {
+func (m mysqlRepo) ByID(ctx context.Context, id int) (core.User, error) {
 
-	var user profile.User
+	var user core.User
 
 	err := m.db.QueryRowContext(ctx, "SELECT id, name, email, is_admin, joined_at FROM "+m.table+" WHERE id=?", id).
 		Scan(&user.Id, &user.Name, &user.Email, &user.IsAdmin, &user.JoinedAt)
@@ -40,17 +40,17 @@ func (m mysqlRepo) ByID(ctx context.Context, id int) (profile.User, error) {
 	return user, nil
 }
 
-func (m mysqlRepo) Add(ctx context.Context, user *profile.User) (int, error) {
+func (m mysqlRepo) Add(ctx context.Context, user *core.User) (int, error) {
 
 	s := strings.Builder{}
-	s.WriteString("name = '"+user.Name+"'")
-	s.WriteString(",email = '"+user.Email+"'")
-	s.WriteString(",password = '"+user.Password+"'")
+	s.WriteString("name = '" + user.Name + "'")
+	s.WriteString(",email = '" + user.Email + "'")
+	s.WriteString(",password = '" + user.Password + "'")
 	is := "0"
 	if user.IsAdmin {
 		is = "1"
 	}
-	s.WriteString(",is_admin = '"+is+"'")
+	s.WriteString(",is_admin = '" + is + "'")
 
 	rows, err := m.db.ExecContext(ctx, "INSERT "+m.table+" SET "+s.String())
 
@@ -67,7 +67,7 @@ func (m mysqlRepo) Add(ctx context.Context, user *profile.User) (int, error) {
 	return int(id), nil
 }
 
-func (m mysqlRepo) Edit(ctx context.Context, user *profile.User) error {
+func (m mysqlRepo) Edit(ctx context.Context, user *core.User) error {
 
 	var s []string
 	if user.Id == 0 {

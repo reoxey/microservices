@@ -1,4 +1,4 @@
-package catalog
+package core
 
 type Product struct {
 	Id        int     `json:"id"`

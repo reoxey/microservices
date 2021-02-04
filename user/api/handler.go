@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"user/logger"
-	"user/profile"
+	"user/core"
 	"user/repo/mysql"
 )
 
@@ -23,14 +23,14 @@ type UserHandler interface {
 }
 
 type handler struct {
-	service profile.UserService
-	log *logger.Logger
+	service core.UserService
+	log     *logger.Logger
 }
 
 const authVerify = "AUTHORIZE"
 
 func (h handler) LoginUser(c *gin.Context) {
-	var l *profile.Login
+	var l *core.Login
 
 	if err := c.Bind(&l); err != nil {
 		h.log.Println("WARNING:handler.Login", "invalid login")
@@ -96,7 +96,7 @@ func (h handler) GetAllUsers(c *gin.Context) {
 }
 
 func (h handler) AddUser(c *gin.Context) {
-	var u *profile.User
+	var u *core.User
 
 	if err := c.Bind(&u); err != nil {
 		h.log.Println("ERROR:handler.AddUser", err)
@@ -117,7 +117,7 @@ func (h handler) AddUser(c *gin.Context) {
 }
 
 func (h handler) EditUser(c *gin.Context) {
-	var u *profile.User
+	var u *core.User
 
 	if err := c.Bind(&u); err != nil {
 		h.log.Println("ERROR:handler.EditUser", err)
@@ -166,6 +166,6 @@ func (h handler) AuthorizeUser() gin.HandlerFunc {
 	}
 }
 
-func NewHandler(s profile.UserService, log *logger.Logger) UserHandler {
+func NewHandler(s core.UserService, log *logger.Logger) UserHandler {
 	return &handler{s, log}
 }

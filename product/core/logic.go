@@ -1,7 +1,8 @@
-package catalog
+package core
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"strconv"
 
@@ -13,6 +14,7 @@ type productService struct {
 	auth     JWTService
 	cache	 Cache
 	validate *validator.Validate
+	publisherQ Publisher
 }
 
 func (p *productService) Authorize(s string) (map[string]interface{}, error) {
@@ -58,10 +60,18 @@ func (p *productService) EditProduct(ctx context.Context, product *Product) erro
 	if err != nil {
 		return err
 	}
+	if product.Price > 0 {
+
+		msg := []byte(fmt.Sprintf("%d|%f", product.Id, product.Price))
+		p.publisherQ.Publish(ctx, &Message{
+			Topic: "product",
+			Msg:  msg,
+		})
+	}
 	return p.cache.SetJSON(ctx,  "product_"+strconv.Itoa(product.Id), &product, 0)
 }
 
-func NewService(pr ProductRepo, cache Cache, auth JWTService) ProductService {
+func NewService(pr ProductRepo, cache Cache, auth JWTService, publisher Publisher) ProductService {
 
 	val := validator.New()
 	val.RegisterValidation("sku", validateSKU)
@@ -71,6 +81,7 @@ func NewService(pr ProductRepo, cache Cache, auth JWTService) ProductService {
 		cache: cache,
 		auth: auth,
 		validate: val,
+		publisherQ: publisher,
 	}
 }
 

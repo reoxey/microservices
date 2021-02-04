@@ -6,18 +6,18 @@ import (
 	"strconv"
 	"strings"
 
-	"product/catalog"
+	"product/core"
 )
 
-func (m mysqlRepo) All(ctx context.Context) (catalog.Products, error) {
+func (m mysqlRepo) All(ctx context.Context) (core.Products, error) {
 	rows, err := m.db.QueryContext(ctx, "SELECT id, sku, name, price, stocks, created_at FROM "+m.table+" WHERE 1")
 	if err != nil {
 		return nil, err
 	}
 
-	var prods []catalog.Product
+	var prods []core.Product
 	for rows.Next() {
-		var prod catalog.Product
+		var prod core.Product
 
 		if err = rows.Scan(&prod.Id, &prod.Sku, &prod.Name, &prod.Price, &prod.Stocks, &prod.CreatedAt); err != nil {
 			return prods, err
@@ -29,9 +29,9 @@ func (m mysqlRepo) All(ctx context.Context) (catalog.Products, error) {
 	return prods, nil
 }
 
-func (m mysqlRepo) ByID(ctx context.Context, i int) (catalog.Product, error) {
+func (m mysqlRepo) ByID(ctx context.Context, i int) (core.Product, error) {
 
-	var prod catalog.Product
+	var prod core.Product
 
 	err := m.db.QueryRowContext(ctx, "SELECT id, sku, name, price, stocks, created_at FROM "+m.table+" WHERE id=?", i).
 		Scan(&prod.Id, &prod.Sku, &prod.Name, &prod.Price, &prod.Stocks, &prod.CreatedAt)
@@ -41,14 +41,14 @@ func (m mysqlRepo) ByID(ctx context.Context, i int) (catalog.Product, error) {
 	return prod, nil
 }
 
-func (m mysqlRepo) Add(ctx context.Context, prod *catalog.Product) (int, error) {
+func (m mysqlRepo) Add(ctx context.Context, prod *core.Product) (int, error) {
 
 	s := strings.Builder{}
-	s.WriteString("sku = '"+prod.Sku+"'")
-	s.WriteString(",name = '"+prod.Name+"'")
+	s.WriteString("sku = '" + prod.Sku + "'")
+	s.WriteString(",name = '" + prod.Name + "'")
 	price := strconv.FormatFloat(prod.Price, 'g', 1, 64)
-	s.WriteString(",price = '"+price+"'")
-	s.WriteString(",stocks = '"+strconv.Itoa(prod.Stocks)+"'")
+	s.WriteString(",price = '" + price + "'")
+	s.WriteString(",stocks = '" + strconv.Itoa(prod.Stocks) + "'")
 
 	rows, err := m.db.ExecContext(ctx, "INSERT "+m.table+" SET "+s.String())
 
@@ -65,7 +65,7 @@ func (m mysqlRepo) Add(ctx context.Context, prod *catalog.Product) (int, error) 
 	return int(id), nil
 }
 
-func (m mysqlRepo) Edit(ctx context.Context, prod *catalog.Product) error {
+func (m mysqlRepo) Edit(ctx context.Context, prod *core.Product) error {
 
 	var s []string
 	if prod.Id == 0 {
@@ -99,4 +99,3 @@ func (m mysqlRepo) Edit(ctx context.Context, prod *catalog.Product) error {
 
 	return err
 }
-

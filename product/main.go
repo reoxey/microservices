@@ -6,10 +6,11 @@ import (
 	"google.golang.org/grpc"
 
 	"product/cache"
-	"product/catalog"
 	"product/catalogpb"
+	"product/core"
 	"product/jwtauth"
 	"product/logger"
+	"product/queue/kafka"
 	"product/repo/mysql"
 	"product/route"
 )
@@ -25,10 +26,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	service := catalog.NewService(
+	service := core.NewService(
 		dbRepo,
 		cache.Redis("localhost"),
 		jwtauth.New(),
+		kafka.NewProducer([]string{
+			"localhost:9092",
+		}, log),
 		)
 
 	go func() {

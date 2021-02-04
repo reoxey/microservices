@@ -1,4 +1,4 @@
-package profile
+package core
 
 type User struct {
 	Id       int    `json:"id"`

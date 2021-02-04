@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"product/catalog"
+	"product/core"
 )
 
 type Server struct {
-	service catalog.ProductService
+	service core.ProductService
 }
 
-func NewGrpc(ps catalog.ProductService) *Server {
+func NewGrpc(ps core.ProductService) *Server {
 	return &Server{ps}
 }
 

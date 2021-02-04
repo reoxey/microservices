@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"product/catalog"
+	"product/core"
 	"product/logger"
 	"product/repo/mysql"
 )
@@ -21,7 +21,7 @@ type UserHandler interface {
 }
 
 type handler struct {
-	service catalog.ProductService
+	service core.ProductService
 	log     *logger.Logger
 }
 
@@ -71,7 +71,7 @@ func (h handler) GetAllProducts(c *gin.Context) {
 }
 
 func (h handler) AddProduct(c *gin.Context) {
-	var p *catalog.Product
+	var p *core.Product
 
 	if err := c.Bind(&p); err != nil {
 		h.log.Println("ERROR:handler.AddProduct", err)
@@ -92,7 +92,7 @@ func (h handler) AddProduct(c *gin.Context) {
 }
 
 func (h handler) EditProduct(c *gin.Context) {
-	var p *catalog.Product
+	var p *core.Product
 
 	if err := c.Bind(&p); err != nil {
 		h.log.Println("ERROR:handler.EditProduct", err)
@@ -144,6 +144,6 @@ func (h handler) AuthorizeUser() gin.HandlerFunc {
 	}
 }
 
-func NewHandler(s catalog.ProductService, log *logger.Logger) UserHandler {
+func NewHandler(s core.ProductService, log *logger.Logger) UserHandler {
 	return &handler{s, log}
 }

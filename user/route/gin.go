@@ -5,7 +5,7 @@ import (
 
 	"user/api"
 	"user/logger"
-	"user/profile"
+	"user/core"
 )
 
 type Gin struct {
@@ -26,7 +26,7 @@ func New(l *logger.Logger, debug bool) *Gin {
 	}
 }
 
-func (g *Gin) Handle(us profile.UserService) {
+func (g *Gin) Handle(us core.UserService) {
 	uh := api.NewHandler(us, g.log)
 
 	loginRoute := g.Group("/api")

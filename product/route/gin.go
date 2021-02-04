@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"product/api"
-	"product/catalog"
+	"product/core"
 	"product/logger"
 )
 
@@ -26,7 +26,7 @@ func New(l *logger.Logger, debug bool) *Gin {
 	}
 }
 
-func (g *Gin) Handle(ps catalog.ProductService) {
+func (g *Gin) Handle(ps core.ProductService) {
 	ph := api.NewHandler(ps, g.log)
 
 

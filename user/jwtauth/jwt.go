@@ -7,7 +7,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 
-	"user/profile"
+	"user/core"
 )
 
 type authClaims struct {
@@ -55,7 +55,7 @@ func (j jwtServices) ValidateToken(token string) (map[string]interface{}, error)
 	return jwtToken.Claims.(jwt.MapClaims), nil
 }
 
-func New() profile.JWTService {
+func New() core.JWTService {
 	return &jwtServices{
 		secretKey: getSecretKey(),
 		issure: "reoxey",

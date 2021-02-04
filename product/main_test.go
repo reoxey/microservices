@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"product/cache"
-	"product/catalog"
+	"product/core"
 	"product/jwtauth"
 	"product/logger"
 	"product/repo/mock"
@@ -22,10 +22,11 @@ func ginServer() *gin.Engine {
 
 	log := logger.New()
 
-	service := catalog.NewService(
+	service := core.NewService(
 		mock.NewMock(),
 		cache.Redis("localhost"),
 		jwtauth.New(),
+		nil,
 	)
 
 	r := route.New(log, true)

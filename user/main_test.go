@@ -14,7 +14,7 @@ import (
 	"user/cache"
 	"user/jwtauth"
 	"user/logger"
-	"user/profile"
+	"user/core"
 	"user/repo/mock"
 	"user/route"
 )
@@ -23,7 +23,7 @@ func ginServer() *gin.Engine {
 
 	log := logger.New()
 
-	service := profile.NewService(
+	service := core.NewService(
 		mock.NewMock(),
 		cache.Redis("localhost"),
 		jwtauth.New(),

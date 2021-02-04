@@ -1,4 +1,4 @@
-package catalog
+package core
 
 type JWTService interface {
 	GenerateToken(id int, email string, isAdmin bool) (string, error)

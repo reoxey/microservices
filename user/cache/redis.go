@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 
-	"user/profile"
+	"user/core"
 )
 
 type redisCache struct {
@@ -40,7 +40,7 @@ func (r *redisCache) SetEx(ctx context.Context, k string, v interface{}, duratio
 	r.rdb.Set(ctx, k, v, duration)
 }
 
-func Redis(addr string) profile.Cache {
+func Redis(addr string) core.Cache {
 	cl := redis.NewClient(&redis.Options{
 		Addr:     addr + ":6379",
 		Password: "",
