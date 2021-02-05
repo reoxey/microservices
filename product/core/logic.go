@@ -60,15 +60,18 @@ func (p *productService) EditProduct(ctx context.Context, product *Product) erro
 	if err != nil {
 		return err
 	}
+
+	p.cache.SetJSON(ctx, "product_"+strconv.Itoa(product.Id), &product, 0)
+
 	if product.Price > 0 {
 
 		msg := []byte(fmt.Sprintf("%d|%f", product.Id, product.Price))
 		p.publisherQ.Publish(ctx, &Message{
 			Topic: "product",
-			Msg:  msg,
+			Msg:   msg,
 		})
 	}
-	return p.cache.SetJSON(ctx,  "product_"+strconv.Itoa(product.Id), &product, 0)
+	return nil
 }
 
 func NewService(pr ProductRepo, cache Cache, auth JWTService, publisher Publisher) ProductService {

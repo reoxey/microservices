@@ -12,5 +12,5 @@ type Subscriber interface {
 }
 
 type Publisher interface {
-	Publish(ctx context.Context, msg *Message)
+	Publish(ctx context.Context, msg *Message) error
 }
