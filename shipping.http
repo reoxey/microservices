@@ -1,0 +1,87 @@
+POST http://localhost:8001/api/login
+Content-Type: application/json
+
+{
+  "email": "im@one.com",
+  "password": "passdowr"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("auth_token", response.body.token);
+%}
+
+###
+POST http://localhost:8004/api/shipping/addresses
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "user": 1,
+  "contact_name": "Test",
+  "contact_phone": "9456",
+  "landmark": "eins",
+  "city": "zwei",
+  "state": "drei",
+  "country": "vier",
+  "zip": 123456
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+    });
+    client.global.set("addr_url", response.headers.valueOf("Location"));
+%}
+
+###
+GET http://localhost:8004/api/shipping/addresses
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+GET http://localhost:8004/{{addr_url}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+PUT http://localhost:8004/api/shipping/addresses
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "id": 1,
+  "contact_name": "Test zwei",
+  "contact_phone": "1234566689"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+GET http://localhost:8004/api/shipping/status/1/1
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
