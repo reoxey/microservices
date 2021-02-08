@@ -31,8 +31,8 @@ func (u userService) AllUsers(ctx context.Context) (Users, error) {
 	return users, nil
 }
 
-func (u userService) UserById(ctx context.Context, id int) (User, error) {
-	var user User
+func (u userService) UserById(ctx context.Context, id int) (*User, error) {
+	var user *User
 	err := u.cache.GetJSON(ctx, "user_"+strconv.Itoa(id), &user)
 	if err != nil {
 		return u.repo.ByID(ctx, id)

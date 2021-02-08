@@ -14,9 +14,9 @@ func (m mysqlRepo) All(ctx context.Context) (core.Users, error) {
 		return nil, err
 	}
 
-	var users []core.User
+	var users core.Users
 	for rows.Next() {
-		var user core.User
+		user := &core.User{}
 
 		if err = rows.Scan(&user.Id, &user.Name, &user.Email, &user.IsAdmin, &user.JoinedAt); err != nil {
 			return users, err
@@ -28,13 +28,16 @@ func (m mysqlRepo) All(ctx context.Context) (core.Users, error) {
 	return users, nil
 }
 
-func (m mysqlRepo) ByID(ctx context.Context, id int) (core.User, error) {
+func (m mysqlRepo) ByID(ctx context.Context, id int) (*core.User, error) {
 
-	var user core.User
+	user := &core.User{}
 
 	err := m.db.QueryRowContext(ctx, "SELECT id, name, email, is_admin, joined_at FROM "+m.table+" WHERE id=?", id).
 		Scan(&user.Id, &user.Name, &user.Email, &user.IsAdmin, &user.JoinedAt)
 	if err != nil {
+		if err == rowsEmpty {
+			return nil, nil
+		}
 		return user, err
 	}
 	return user, nil

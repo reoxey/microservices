@@ -9,7 +9,7 @@ type User struct {
 	JoinedAt string `json:"joined_at"`
 }
 
-type Users []User
+type Users []*User
 
 type Login struct {
 	Email    string `json:"email"`

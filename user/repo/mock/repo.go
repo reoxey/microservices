@@ -10,7 +10,7 @@ type repo struct {
 }
 
 func (r repo) All(ctx context.Context) (core.Users, error) {
-	return []core.User{
+	return core.Users{
 		{
 			Id:       1,
 			Name:     "One",
@@ -28,8 +28,8 @@ func (r repo) All(ctx context.Context) (core.Users, error) {
 	}, nil
 }
 
-func (r repo) ByID(ctx context.Context, i int) (core.User, error) {
-	return core.User{
+func (r repo) ByID(ctx context.Context, i int) (*core.User, error) {
+	return &core.User{
 		Id:       i,
 		Name:     "One",
 		Email:    "one@test.com",
