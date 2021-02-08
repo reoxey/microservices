@@ -15,7 +15,7 @@ func (m mysqlRepo) All(ctx context.Context) (core.Products, error) {
 		return nil, err
 	}
 
-	var prods []core.Product
+	var prods core.Products
 	for rows.Next() {
 		var prod core.Product
 

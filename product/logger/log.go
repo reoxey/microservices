@@ -13,7 +13,7 @@ type Logger struct {
 
 func New() *Logger {
 	return &Logger{
-		log.New(os.Stdout, "[account] ", log.Lshortfile| log.Lmsgprefix| log.LstdFlags),
+		log.New(os.Stdout, "[product] ", log.Lshortfile|log.Lmsgprefix|log.LstdFlags),
 	}
 }
 
