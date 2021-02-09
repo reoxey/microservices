@@ -9,8 +9,12 @@ import (
 type repo struct {
 }
 
+func (r repo) UpdateStocks(ctx context.Context, items core.Items) error {
+	return nil
+}
+
 func (r repo) All(ctx context.Context) (core.Products, error) {
-	return []core.Product{
+	return core.Products{
 		{
 			Id:        1,
 			Sku:       "ok1",
@@ -28,8 +32,8 @@ func (r repo) All(ctx context.Context) (core.Products, error) {
 	}, nil
 }
 
-func (r repo) ByID(ctx context.Context, i int) (core.Product, error) {
-	return core.Product{
+func (r repo) ByID(ctx context.Context, i int) (*core.Product, error) {
+	return &core.Product{
 		Id:        i,
 		Sku:       "ok1",
 		Name:      "One",

@@ -17,7 +17,7 @@ func (m mysqlRepo) All(ctx context.Context) (core.Products, error) {
 
 	var prods core.Products
 	for rows.Next() {
-		var prod core.Product
+		prod := &core.Product{}
 
 		if err = rows.Scan(&prod.Id, &prod.Sku, &prod.Name, &prod.Price, &prod.Stocks, &prod.CreatedAt); err != nil {
 			return prods, err
@@ -29,13 +29,16 @@ func (m mysqlRepo) All(ctx context.Context) (core.Products, error) {
 	return prods, nil
 }
 
-func (m mysqlRepo) ByID(ctx context.Context, i int) (core.Product, error) {
+func (m mysqlRepo) ByID(ctx context.Context, i int) (*core.Product, error) {
 
-	var prod core.Product
+	prod := &core.Product{}
 
 	err := m.db.QueryRowContext(ctx, "SELECT id, sku, name, price, stocks, created_at FROM "+m.table+" WHERE id=?", i).
 		Scan(&prod.Id, &prod.Sku, &prod.Name, &prod.Price, &prod.Stocks, &prod.CreatedAt)
 	if err != nil {
+		if err == rowsEmpty {
+			return nil, nil
+		}
 		return prod, err
 	}
 	return prod, nil
@@ -46,7 +49,7 @@ func (m mysqlRepo) Add(ctx context.Context, prod *core.Product) (int, error) {
 	s := strings.Builder{}
 	s.WriteString("sku = '" + prod.Sku + "'")
 	s.WriteString(",name = '" + prod.Name + "'")
-	price := strconv.FormatFloat(prod.Price, 'g', 1, 64)
+	price := strconv.FormatFloat(prod.Price, 'f', -1, 64)
 	s.WriteString(",price = '" + price + "'")
 	s.WriteString(",stocks = '" + strconv.Itoa(prod.Stocks) + "'")
 
@@ -78,7 +81,7 @@ func (m mysqlRepo) Edit(ctx context.Context, prod *core.Product) error {
 		s = append(s, "name = '"+prod.Name+"'")
 	}
 	if prod.Price != 0 {
-		price := strconv.FormatFloat(prod.Price, 'g', 1, 64)
+		price := strconv.FormatFloat(prod.Price, 'f', -1, 64)
 		s = append(s, "price = '"+price+"'")
 	}
 	if prod.Stocks != 0 {
@@ -99,3 +102,15 @@ func (m mysqlRepo) Edit(ctx context.Context, prod *core.Product) error {
 
 	return err
 }
+
+func (m mysqlRepo) UpdateStocks(ctx context.Context, items core.Items) (err error) {
+
+	for _, item := range items {
+		_, err = m.db.ExecContext(ctx,
+			"UPDATE "+m.table+" SET stocks = stocks - ? WHERE id = ?", item.Qty, item.Id,
+		)
+	}
+
+	return
+}
+

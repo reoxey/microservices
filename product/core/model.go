@@ -9,4 +9,11 @@ type Product struct {
 	CreatedAt string  `json:"created_at"`
 }
 
-type Products []Product
+type Products []*Product
+
+type Item struct {
+	Id  int `json:"id"`
+	Qty int `json:"qty"`
+}
+
+type Items []*Item

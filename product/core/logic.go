@@ -10,11 +10,15 @@ import (
 )
 
 type productService struct {
-	repo     ProductRepo
-	auth     JWTService
-	cache	 Cache
-	validate *validator.Validate
+	repo       ProductRepo
+	auth       JWTService
+	cache      Cache
+	validate   *validator.Validate
 	publisherQ Publisher
+}
+
+func (p *productService) UpdateProductStocks(ctx context.Context, items Items) error {
+	return p.repo.UpdateStocks(ctx, items)
 }
 
 func (p *productService) Authorize(s string) (map[string]interface{}, error) {
@@ -34,8 +38,8 @@ func (p *productService) AllProducts(ctx context.Context) (Products, error) {
 	return products, nil
 }
 
-func (p *productService) ProductById(ctx context.Context, i int) (Product, error) {
-	var product Product
+func (p *productService) ProductById(ctx context.Context, i int) (*Product, error) {
+	var product *Product
 	err := p.cache.GetJSON(ctx, "product_"+strconv.Itoa(i), &product)
 	if err != nil {
 		return p.repo.ByID(ctx, i)
@@ -67,7 +71,7 @@ func (p *productService) EditProduct(ctx context.Context, product *Product) erro
 
 		msg := []byte(fmt.Sprintf("%d|%f", product.Id, product.Price))
 		p.publisherQ.Publish(ctx, &Message{
-			Topic: "product",
+			Topic: "product_price",
 			Msg:   msg,
 		})
 	}

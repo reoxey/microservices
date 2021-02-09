@@ -21,13 +21,17 @@ func (s *Server) GetProduct(ctx context.Context, in *ProductId) (*Product, error
 		return nil, err
 	}
 
+	if prod == nil {
+		return nil, fmt.Errorf("invalid_prod %d", in.Id)
+	}
+
 	fmt.Println(prod)
 
 	p := &Product{
-		Id:            int32(prod.Id),
-		Name:          prod.Name,
-		Price:         prod.Price,
-		Stocks:        int32(prod.Stocks),
+		Id:     int32(prod.Id),
+		Name:   prod.Name,
+		Price:  prod.Price,
+		Stocks: int32(prod.Stocks),
 	}
 
 	return p, err

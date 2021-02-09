@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"net"
 
 	"google.golang.org/grpc"
 
 	"product/cache"
 	"product/catalogpb"
+	"product/consumer"
 	"product/core"
 	"product/jwtauth"
 	"product/logger"
@@ -52,6 +54,16 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
+
+	cons := consumer.Port{
+		Sub: kafka.NewConsumer(
+			[]string{"localhost:9092"},
+			log,
+		),
+		Service: service,
+		Log:     log,
+	}
+	go cons.Run(context.Background())
 
 	r := route.New(log, true)
 

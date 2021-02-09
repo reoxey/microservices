@@ -105,7 +105,7 @@ func (h handler) EditProduct(c *gin.Context) {
 	if err != nil {
 		if err == mysql.NoRowsAffected {
 			h.log.Println("WARNING:handler.EditProduct", err)
-			c.AbortWithStatusJSON(http.StatusNoContent, nil)
+			c.AbortWithStatusJSON(http.StatusOK, nil)
 			return
 		}
 		h.log.Println("ERROR:handler.EditProduct", err)
