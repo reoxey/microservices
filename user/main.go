@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"user/cache"
 	"user/jwtauth"
 	"user/logger"
@@ -11,18 +13,20 @@ import (
 
 func main() {
 
-	dsn := "micro:micro@tcp(127.0.0.1:3306)/micro"
+	dsn := os.Getenv("DB_DSN")
+	dbTable := os.Getenv("DB_TABLE")
+	redisHost := os.Getenv("REDIS")
 
 	log := logger.New()
 
-	dbRepo, err := mysql.NewRepo(dsn, "users", 10)
+	dbRepo, err := mysql.NewRepo(dsn, dbTable, 10)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	service := core.NewService(
 		dbRepo,
-		cache.Redis("localhost"),
+		cache.Redis(redisHost),
 		jwtauth.New(),
 		)
 
