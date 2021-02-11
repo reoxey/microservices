@@ -25,7 +25,7 @@ Content-Type: application/json
 %}
 
 ###
-GET http://localhost:8002/api/products/1
+GET http://localhost:8002/api/products/6
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 
@@ -43,7 +43,8 @@ Content-Type: application/json
 {
   "sku": "pol-uik",
   "name": "New Product",
-  "price": 14.5683
+  "price": 14.5683,
+  "stocks": 10
 }
 
 > {%
@@ -58,7 +59,7 @@ Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 
 {
-  "id": 1,
+  "id": 4,
   "name": "Non Product"
 }
 
