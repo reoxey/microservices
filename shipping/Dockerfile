@@ -8,10 +8,10 @@ COPY . .
 
 RUN CGO_ENABLED=0 go test . && go build -o app .
 
-FROM scratch
+FROM alpine
 
-WORKDIR /micro
+COPY --from=builder /micro/shipping/app .
 
-COPY --from=builder /micro/shipping .
+EXPOSE 8001
 
-CMD ["./app"]
+CMD ["/app"]
