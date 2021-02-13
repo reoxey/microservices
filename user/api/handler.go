@@ -40,7 +40,7 @@ func (h handler) LoginUser(c *gin.Context) {
 	token, err := h.service.Login(context.Background(), l)
 	if err != nil {
 		h.log.Println("WARNING:handler.Login", "invalid login")
-		c.AbortWithStatusJSON(http.StatusInternalServerError, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, nil)
 		return
 	}
 	if token == "" {
