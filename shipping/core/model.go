@@ -30,7 +30,7 @@ type Shipping struct {
 	Status        ShippingStatus `json:"status"`
 	PaymentHandle int            `json:"payment_handle"`
 	PaymentStatus int            `json:"payment_status"`
-	Address
+	*Address
 }
 
 type Addresses []*Address

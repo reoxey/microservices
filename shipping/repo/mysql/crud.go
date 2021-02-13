@@ -35,6 +35,37 @@ func (m mysqlRepo) AddAddress(ctx context.Context, address *core.Address) (int, 
 	return int(id), nil
 }
 
+func (m mysqlRepo) AddOrderShipping(ctx context.Context, ship *core.Shipping) (int, error) {
+	s := strings.Builder{}
+	s.WriteString("order_id = '" + strconv.Itoa(ship.OrderId) + "'")
+	s.WriteString(",status = '" + strconv.Itoa(int(ship.Status)) + "'")
+	s.WriteString(",payment_handle = '" + strconv.Itoa(ship.PaymentHandle) + "'")
+	s.WriteString(",payment_status = '" + strconv.Itoa(ship.PaymentStatus) + "'")
+	s.WriteString(",user = '" + strconv.Itoa(ship.User) + "'")
+	s.WriteString(",contact_name = '" + ship.ContactName + "'")
+	s.WriteString(",contact_phone = '" + ship.ContactPhone + "'")
+	s.WriteString(",landmark = '" + ship.Landmark + "'")
+	s.WriteString(",city = '" + ship.City + "'")
+	s.WriteString(",state = '" + ship.State + "'")
+	s.WriteString(",country = '" + ship.Country + "'")
+	s.WriteString(",zip = '" + strconv.Itoa(ship.Zip) + "'")
+
+	rows, err := m.db.ExecContext(ctx, "INSERT "+m.table+" SET "+s.String())
+
+	if err != nil {
+		return 0, err
+	}
+
+	if n, _ := rows.RowsAffected(); n == 0 {
+		return 0, NoRowsAffected
+	}
+
+	id, _ := rows.LastInsertId()
+
+	return int(id), nil
+}
+
+
 func (m mysqlRepo) AddressById(ctx context.Context, i int) (*core.Address, error) {
 	addr := &core.Address{}
 
@@ -44,15 +75,18 @@ func (m mysqlRepo) AddressById(ctx context.Context, i int) (*core.Address, error
 		Scan(&addr.Id, &addr.User, &addr.ContactName, &addr.ContactPhone,
 			&addr.Landmark, &addr.City, &addr.State, &addr.Country, &addr.Zip, &addr.CreatedAt)
 	if err != nil {
+		if err == rowsEmpty {
+			return nil, nil
+		}
 		return addr, err
 	}
 	return addr, nil
 }
 
-func (m mysqlRepo) AllAddresses(ctx context.Context) (core.Addresses, error) {
+func (m mysqlRepo) AllAddresses(ctx context.Context, userId int) (core.Addresses, error) {
 	rows, err := m.db.QueryContext(ctx, "SELECT id, user, contact_name, contact_phone, "+
 		"landmark, city, state, country, zip, created_at"+
-		" FROM "+m.table+"_addresses WHERE 1")
+		" FROM "+m.table+"_addresses WHERE user=?", userId)
 	if err != nil {
 		return nil, err
 	}

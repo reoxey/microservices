@@ -1,8 +1,12 @@
 package main
 
 import (
+	"context"
+
+	"shipping/consumer"
 	"shipping/jwtauth"
 	"shipping/logger"
+	"shipping/queue/kafka"
 	"shipping/repo/mysql"
 	"shipping/route"
 	"shipping/core"
@@ -23,6 +27,16 @@ func main() {
 		dbRepo,
 		jwtauth.New(),
 	)
+
+	cons := consumer.Port{
+		Sub: kafka.NewConsumer(
+			[]string{"localhost:9092"},
+			log,
+		),
+		Service:   service,
+		Log:       log,
+	}
+	go cons.Run(context.Background())
 
 	r := route.New(log, true)
 

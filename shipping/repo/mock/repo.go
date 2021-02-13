@@ -9,6 +9,10 @@ import (
 type repo struct {
 }
 
+func (r repo) AddOrderShipping(ctx context.Context, ship *core.Shipping) (int, error) {
+	return 0, nil
+}
+
 func (r repo) AddAddress(ctx context.Context, address *core.Address) (int, error) {
 	return 0, nil
 }
@@ -29,7 +33,7 @@ func (r repo) AddressById(ctx context.Context, id int) (*core.Address, error) {
 		nil
 }
 
-func (r repo) AllAddresses(ctx context.Context) (core.Addresses, error) {
+func (r repo) AllAddresses(ctx context.Context, userId int) (core.Addresses, error) {
 	return core.Addresses{}, nil
 }
 

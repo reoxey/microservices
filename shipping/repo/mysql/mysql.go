@@ -16,7 +16,7 @@ type mysqlRepo struct {
 }
 
 var (
-	rowsEmpty      = errors.New("rows_empty")
+	rowsEmpty      = sql.ErrNoRows
 	NoRowsAffected = errors.New("no_rows_affected")
 	noIdUpdate     = errors.New("no_id_for_update")
 )

@@ -19,12 +19,21 @@ func (s shipServ) AddAddress(ctx context.Context, address *Address) (int, error)
 	return s.repo.AddAddress(ctx, address)
 }
 
+func (s shipServ) AddOrderShipping(ctx context.Context, ship *Shipping) (int, error) {
+	addr, err := s.repo.AddressById(ctx, ship.Id)
+	if err != nil {
+		return 0, err
+	}
+	ship.Address = addr
+	return s.repo.AddOrderShipping(ctx, ship)
+}
+
 func (s shipServ) AddressById(ctx context.Context, addressId int) (*Address, error) {
 	return s.repo.AddressById(ctx, addressId)
 }
 
-func (s shipServ) AllAddresses(ctx context.Context) (Addresses, error) {
-	return s.repo.AllAddresses(ctx)
+func (s shipServ) AllAddresses(ctx context.Context, userId int) (Addresses, error) {
+	return s.repo.AllAddresses(ctx, userId)
 }
 
 func (s shipServ) EditAddress(ctx context.Context, address *Address) error {

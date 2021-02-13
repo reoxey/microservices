@@ -71,7 +71,14 @@ func (h handler) GetAddressById(c *gin.Context) {
 }
 
 func (h handler) GetAllAddresses(c *gin.Context) {
-	addrs, err := h.service.AllAddresses(c)
+
+	userId, err := verifyAuth(c)
+	if err != nil {
+		h.log.Println("ERROR:handler.AddAddress", err)
+		return
+	}
+
+	addrs, err := h.service.AllAddresses(c, userId)
 	if err != nil {
 		h.log.Println("ERROR:handler.GetAllAddresses", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, nil)
@@ -92,7 +99,7 @@ func (h handler) UpdateAddress(c *gin.Context) {
 	if err := h.service.EditAddress(c, addr); err != nil {
 		if err == mysql.NoRowsAffected {
 			h.log.Println("WARNING:handler.UpdateAddress", err)
-			c.AbortWithStatusJSON(http.StatusNoContent, nil)
+			c.AbortWithStatusJSON(http.StatusOK, nil)
 			return
 		}
 		h.log.Println("ERROR:handler.UpdateAddress", err)
@@ -192,10 +199,10 @@ func verifyAuth(c *gin.Context) (id int, err error) {
 	tokenMap := val.(map[string]interface{})
 	id = int(tokenMap["id"].(float64))
 
-	if !tokenMap["is_admin"].(bool) {
-		c.AbortWithStatusJSON(http.StatusForbidden, nil)
-		return id, errors.New("user denied "+tokenMap["email"].(string))
-	}
+	// if !tokenMap["is_admin"].(bool) {
+	// 	c.AbortWithStatusJSON(http.StatusForbidden, nil)
+	// 	return id, errors.New("user denied "+tokenMap["email"].(string))
+	// }
 
 	return
 }
