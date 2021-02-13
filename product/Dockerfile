@@ -12,6 +12,6 @@ FROM alpine
 
 COPY --from=builder /micro/product/app .
 
-EXPOSE 8001
+EXPOSE 8002
 
 CMD ["/app"]

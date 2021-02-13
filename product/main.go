@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"net"
+	"os"
+	"strings"
 
 	"google.golang.org/grpc"
 
@@ -19,22 +21,23 @@ import (
 
 func main() {
 
-	dsn := "micro:micro@tcp(127.0.0.1:3306)/micro"
+	dsn := os.Getenv("DB_DSN")
+	dbTable := os.Getenv("DB_TABLE")
+	redisHost := os.Getenv("REDIS")
+	kafkaHosts := strings.Split(os.Getenv("KAFKA_HOST"), ",")
 
 	log := logger.New()
 
-	dbRepo, err := mysql.NewRepo(dsn, "products", 10)
+	dbRepo, err := mysql.NewRepo(dsn, dbTable, 10)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	service := core.NewService(
 		dbRepo,
-		cache.Redis("localhost"),
+		cache.Redis(redisHost),
 		jwtauth.New(),
-		kafka.NewProducer([]string{
-			"localhost:9092",
-		}, log),
+		kafka.NewProducer(kafkaHosts, log),
 		)
 
 	go func() {
@@ -57,7 +60,7 @@ func main() {
 
 	cons := consumer.Port{
 		Sub: kafka.NewConsumer(
-			[]string{"localhost:9092"},
+			kafkaHosts,
 			log,
 		),
 		Service: service,
