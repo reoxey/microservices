@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"os"
+	"strings"
 
 	"shipping/consumer"
 	"shipping/jwtauth"
@@ -14,11 +16,13 @@ import (
 
 func main() {
 
-	dsn := "micro:micro@tcp(127.0.0.1:3306)/micro"
+	dsn := os.Getenv("DB_DSN")
+	dbTable := os.Getenv("DB_TABLE")
+	kafkaHosts := strings.Split(os.Getenv("KAFKA_HOST"), ",")
 
 	log := logger.New()
 
-	dbRepo, err := mysql.NewRepo(dsn, "shipping", 10)
+	dbRepo, err := mysql.NewRepo(dsn, dbTable, 10)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -30,7 +34,7 @@ func main() {
 
 	cons := consumer.Port{
 		Sub: kafka.NewConsumer(
-			[]string{"localhost:9092"},
+			kafkaHosts,
 			log,
 		),
 		Service:   service,

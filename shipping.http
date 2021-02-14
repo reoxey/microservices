@@ -19,7 +19,6 @@ Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 
 {
-  "user": 1,
   "contact_name": "Test",
   "contact_phone": "9456",
   "landmark": "eins",

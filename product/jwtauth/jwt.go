@@ -58,14 +58,14 @@ func (j jwtServices) ValidateToken(token string) (map[string]interface{}, error)
 func New() core.JWTService {
 	return &jwtServices{
 		secretKey: getSecretKey(),
-		issure: "reoxey",
+		issure: "OLGECSCvkic6btLfdAsW0LpnEf1A38h1",
 	}
 }
 
 func getSecretKey() string {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		secret = "secret"
+		secret = "helloworld"
 	}
 	return secret
 }

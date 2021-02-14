@@ -70,7 +70,7 @@ func TestProduct(t *testing.T) {
 			"%s/api/products",
 			"POST",
 			201,
-			bytes.NewBuffer([]byte(`{"sku": "olk-yok", "name": "New Product", "price": 12.3456}`)),
+			bytes.NewBuffer([]byte(`{"sku": "olk-yok", "name": "New Product", "price": 12.3456, "stocks": 100}`)),
 		},
 		{
 			"Should edit product in mock with status 200",
@@ -103,7 +103,7 @@ func TestProduct(t *testing.T) {
 			if err != nil {
 				t.Errorf("Expected no error, got %v", err)
 
-			} else if resp.StatusCode != 200 {
+			} else if resp.StatusCode != st.status {
 				t.Errorf("Expected status code 200, got %v", resp.StatusCode)
 			}
 			defer resp.Body.Close()
