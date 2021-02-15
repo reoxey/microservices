@@ -21,6 +21,7 @@ func main() {
 
 	dsn := os.Getenv("DB_DSN")
 	dbTable := os.Getenv("DB_TABLE")
+	grpcPort := os.Getenv("PRODUCT_GRPC")
 	kafkaHosts := strings.Split(os.Getenv("KAFKA_HOST"), ",")
 
 	log := logger.New()
@@ -30,7 +31,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	conn, err := grpc.Dial(":9001", grpc.WithInsecure())
+	conn, err := grpc.Dial(grpcPort, grpc.WithInsecure())
 	if err != nil {
 		log.Println(err)
 	}
