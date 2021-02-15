@@ -1,0 +1,80 @@
+---
+# Source: phpmyadmin/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: pma-phpmyadmin
+  labels:
+    app: phpmyadmin
+    chart: phpmyadmin-5.0.5
+    release: pma
+    heritage: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: phpmyadmin
+    release: pma
+---
+# Source: phpmyadmin/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pma-phpmyadmin
+  labels:
+    app: phpmyadmin
+    chart: phpmyadmin-5.0.5
+    release: pma
+    heritage: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phpmyadmin
+      release: pma
+  template:
+    metadata:
+      labels:
+        app: phpmyadmin
+        chart: phpmyadmin-5.0.5
+        release: pma
+    spec:      
+      hostAliases:
+        - ip: "127.0.0.1"
+          hostnames:
+            - "status.localhost"
+      containers:
+        - name: phpmyadmin
+          image: docker.io/bitnami/phpmyadmin:5.0.2-debian-10-r58
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_PORT_NUMBER
+              value: "3306"
+            - name: DATABASE_HOST
+              value: "mariadb"
+            - name: PHPMYADMIN_ALLOW_NO_PASSWORD
+              value: "false"
+            - name: DATABASE_ENABLE_SSL
+              value: "no"
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            - name: https
+              containerPort: 443
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            limits: {}
+            requests: {}

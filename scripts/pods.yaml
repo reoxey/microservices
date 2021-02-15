@@ -1,0 +1,163 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  labels:
+    app: user
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user
+
+  template:
+    metadata:
+      labels:
+        app: user
+    spec:
+      containers:
+        - name: user
+          image: docker.mobobeat.com/microuser:v1.1
+          env:
+            - name: DB_DSN
+              value: "micro:micro@tcp(mariadb:3306)/micro"
+            - name: DB_TABLE
+              value: "users"
+            - name: REDIS
+              value: "redis"
+          ports:
+            - containerPort: 8001
+      imagePullSecrets:
+        - name: regcred
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+  labels:
+    app: product
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product
+
+  template:
+    metadata:
+      labels:
+        app: product
+    spec:
+      containers:
+        - name: product
+          image: docker.mobobeat.com/microproduct:v1.1
+          env:
+            - name: DB_DSN
+              value: "micro:micro@tcp(mariadb:3306)/micro"
+            - name: DB_TABLE
+              value: "products"
+            - name: REDIS
+              value: "redis"
+            - name: KAFKA_HOST
+              value: "kafka"
+          ports:
+            - containerPort: 8002
+      imagePullSecrets:
+        - name: regcred
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shipping-service
+  labels:
+    app: shipping
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shipping
+
+  template:
+    metadata:
+      labels:
+        app: shipping
+    spec:
+      containers:
+        - name: shipping
+          image: docker.mobobeat.com/microshipping:v1.0
+          env:
+            - name: DB_DSN
+              value: "micro:micro@tcp(mariadb:3306)/micro"
+            - name: DB_TABLE
+              value: "shipping"
+            - name: REDIS
+              value: "redis"
+            - name: KAFKA_HOST
+              value: "kafka"
+          ports:
+            - containerPort: 8004
+      imagePullSecrets:
+        - name: regcred
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cart-service
+  labels:
+    app: cart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cart
+
+  template:
+    metadata:
+      labels:
+        app: cart
+    spec:
+      containers:
+        - name: cart
+          image: docker.mobobeat.com/microcart:v1.0
+          env:
+            - name: DB_DSN
+              value: "micro:micro@tcp(mariadb:3306)/micro"
+            - name: DB_TABLE
+              value: "carts"
+            - name: REDIS
+              value: "redis"
+            - name: KAFKA_HOST
+              value: "kafka"
+            - name: PRODUCT_GRPC
+              value: "microproduct:9001"
+          ports:
+            - containerPort: 8003
+      imagePullSecrets:
+        - name: regcred
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redisdb
+  labels:
+    app: redispod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redispod
+
+  template:
+    metadata:
+      labels:
+        app: redispod
+    spec:
+      containers:
+        - name: redispod
+          image: redis
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 6379

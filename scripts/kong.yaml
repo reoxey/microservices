@@ -1,0 +1,665 @@
+---
+# Source: kong/templates/ingress-controller-rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kong
+  labels:
+    app.kubernetes.io/name: kong
+    helm.sh/chart: kong-1.1.4
+    app.kubernetes.io/instance: kong
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: kong/charts/postgresql/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kong-postgresql
+  labels:
+    app: postgresql
+    chart: postgresql-8.9.6
+    release: "kong"
+    heritage: "Helm"
+type: Opaque
+data:
+  postgresql-password: "VllDcHJqZ3hyeQ=="
+---
+# Source: kong/templates/kong-script-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-scripts
+  namespace: default
+  labels:
+    app.kubernetes.io/name: kong
+    helm.sh/chart: kong-1.1.4
+    app.kubernetes.io/instance: kong
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: server
+data:
+  kong-container-health.sh: |-
+    #!/bin/bash
+
+    set -o errexit
+    set -o nounset
+    set -o pipefail
+
+    # Load libraries
+    . /opt/bitnami/scripts/libos.sh
+    . /opt/bitnami/scripts/libkong.sh
+
+    # Load Kong environment variables
+    eval "$(kong_env)"
+
+    is_kong_running
+
+  ingress-container-wait-for-kong.sh: |-
+    #!/bin/bash
+
+    echo "Waiting for the Kong container to be ready"
+    if wait-for-port --timeout=300 --host=127.0.0.1 --state=inuse 8000; then
+      echo "Kong container ready"
+    else
+      echo "Kong not ready after 300 seconds"
+      exit 1
+    fi
+
+  ingress-container-start.sh: |-
+    #!/bin/bash
+
+    . /health/ingress-container-wait-for-kong.sh
+
+    kong-ingress-controller
+---
+# Source: kong/templates/ingress-controller-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: kong
+    helm.sh/chart: kong-1.1.4
+    app.kubernetes.io/instance: kong
+    app.kubernetes.io/managed-by: Helm
+  name: kong
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - endpoints
+      - nodes
+      - pods
+      - secrets
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - "extensions"
+      - "networking.k8s.io"
+      - "networking.internal.knative.dev"
+    resources:
+      - ingresses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  - apiGroups:
+      - "extensions"
+      - "networking.k8s.io"
+      - "networking.internal.knative.dev"
+    resources:
+      - ingresses/status
+    verbs:
+      - update
+  - apiGroups:
+      - "configuration.konghq.com"
+    resources:
+      - tcpingresses/status
+    verbs:
+      - update
+  - apiGroups:
+      - "configuration.konghq.com"
+    resources:
+      - kongplugins
+      - kongclusterplugins
+      - kongcredentials
+      - kongconsumers
+      - kongingresses
+      - tcpingresses
+    verbs:
+      - get
+      - list
+      - watch
+---
+# Source: kong/templates/ingress-controller-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: kong
+  labels:
+    app.kubernetes.io/name: kong
+    helm.sh/chart: kong-1.1.4
+    app.kubernetes.io/instance: kong
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kong
+subjects:
+  - kind: ServiceAccount
+    name: kong
+    namespace: default
+---
+# Source: kong/templates/ingress-controller-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: kong
+  namespace: default
+  labels:
+    app.kubernetes.io/name: kong
+    helm.sh/chart: kong-1.1.4
+    app.kubernetes.io/instance: kong
+    app.kubernetes.io/managed-by: Helm
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - pods
+      - secrets
+      - namespaces
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    resourceNames:
+      - "kong-ingress-controller-leader-kong-kong"
+    verbs:
+      - get
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - create
+  - apiGroups:
+      - ""
+    resources:
+      - endpoints
+    verbs:
+      - get
+---
+# Source: kong/templates/ingress-controller-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: kong
+  namespace: default
+  labels:
+    app.kubernetes.io/name: kong
+    helm.sh/chart: kong-1.1.4
+    app.kubernetes.io/instance: kong
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kong
+subjects:
+  - kind: ServiceAccount
+    name: kong
+    namespace: default
+---
+# Source: kong/charts/postgresql/templates/svc-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-postgresql-headless
+  labels:
+    app: postgresql
+    chart: postgresql-8.9.6
+    release: "kong"
+    heritage: "Helm"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: tcp-postgresql
+  selector:
+    app: postgresql
+    release: "kong"
+---
+# Source: kong/charts/postgresql/templates/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-postgresql
+  labels:
+    app: postgresql
+    chart: postgresql-8.9.6
+    release: "kong"
+    heritage: "Helm"
+  annotations:
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: tcp-postgresql
+  selector:
+    app: postgresql
+    release: "kong"
+    role: master
+---
+# Source: kong/templates/metrics-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-metrics
+  namespace: default
+  labels:
+    app.kubernetes.io/name: kong
+    helm.sh/chart: kong-1.1.4
+    app.kubernetes.io/instance: kong
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    prometheus.io/path: /metrics
+    prometheus.io/port: '9119'
+    prometheus.io/scrape: "true"
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9119
+      targetPort: http-metrics
+      protocol: TCP
+      name: http-metrics
+      nodePort: null
+  selector:
+    app.kubernetes.io/name: kong
+    app.kubernetes.io/instance: kong
+    app.kubernetes.io/component: server
+---
+# Source: kong/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong
+  namespace: default
+  labels:
+    app.kubernetes.io/name: kong
+    helm.sh/chart: kong-1.1.4
+    app.kubernetes.io/instance: kong
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: server
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http-proxy
+      protocol: TCP
+      name: http-proxy
+      nodePort: null
+    - port: 443
+      targetPort: https-proxy
+      protocol: TCP
+      name: https-proxy
+      nodePort: null
+  selector:
+    app.kubernetes.io/name: kong
+    app.kubernetes.io/instance: kong
+    app.kubernetes.io/component: server
+---
+# Source: kong/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kong
+  namespace: default
+  labels:
+    app.kubernetes.io/name: kong
+    helm.sh/chart: kong-1.1.4
+    app.kubernetes.io/instance: kong
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kong
+      app.kubernetes.io/instance: kong
+      app.kubernetes.io/component: server
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kong
+        helm.sh/chart: kong-1.1.4
+        app.kubernetes.io/instance: kong
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/component: server
+      annotations:
+        checksum/configmap-kong: 929e0d2132e4d0e287d45fcad6efe29ff3e85c8b764c15a355a99579a331a33a
+    spec:
+      serviceAccountName: kong
+      
+      containers:
+        - name: kong
+          image: docker.io/bitnami/kong:2.0.4-debian-10-r19
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - kong quit
+          env:
+            - name: KONG_DATABASE
+              value: "postgres"
+            - name: KONG_PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kong-postgresql
+                  key: postgresql-password
+            - name: KONG_PG_HOST
+              value: kong-postgresql
+            - name: KONG_PG_USER
+              value: kong
+          ports:
+            - name: http-proxy
+              containerPort: 8000
+              protocol: TCP
+            - name: https-proxy
+              containerPort: 8443
+              protocol: TCP
+            - name: http-admin
+              containerPort: 8001
+              protocol: TCP
+            - name: https-admin
+              containerPort: 8444
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - /health/kong-container-health.sh
+            initialDelaySeconds: 200
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 6
+            successThreshold: 1
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - /health/kong-container-health.sh
+            initialDelaySeconds: 40
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 6
+            successThreshold: 1
+          resources:
+            limits: {}
+            requests: {}
+          volumeMounts:
+            - name: health
+              mountPath: /health
+        - name: kong-ingress-controller
+          image: docker.io/bitnami/kong-ingress-controller:1.1.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+          command:
+            - bash
+            - -ec
+            - /health/ingress-container-start.sh
+          env:
+            - name: CONTROLLER_KONG_ADMIN_URL
+              value: http://127.0.0.1:8001
+            - name: CONTROLLER_PUBLISH_SERVICE
+              value: "default/kong"
+            - name: CONTROLLER_INGRESS_CLASS
+              value: kong
+            - name: CONTROLLER_ELECTION_ID
+              value: kong-ingress-controller-leader-kong
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+            - name: http-health
+              containerPort: 10254
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: "/healthz"
+              port: http-health
+              scheme: HTTP
+            initialDelaySeconds: 200
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 6
+            successThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: "/healthz"
+              port: http-health
+              scheme: HTTP
+            initialDelaySeconds: 40
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 6
+            successThreshold: 1
+          resources:
+            limits: {}
+            requests: {}
+          volumeMounts:
+            - name: health
+              mountPath: /health
+      volumes:
+        - name: health
+          configMap:
+            name: kong-scripts
+            defaultMode: 0755
+---
+# Source: kong/charts/postgresql/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kong-postgresql
+  labels:
+    app: postgresql
+    chart: postgresql-8.9.6
+    release: "kong"
+    heritage: "Helm"
+  annotations:
+spec:
+  serviceName: kong-postgresql-headless
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: postgresql
+      release: "kong"
+      role: master
+  template:
+    metadata:
+      name: kong-postgresql
+      labels:
+        app: postgresql
+        chart: postgresql-8.9.6
+        release: "kong"
+        heritage: "Helm"
+        role: master
+    spec:      
+      securityContext:
+        fsGroup: 1001
+      containers:
+        - name: kong-postgresql
+          image: docker.io/bitnami/postgresql:11.7.0-debian-10-r99
+          imagePullPolicy: "IfNotPresent"
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            runAsUser: 1001
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: POSTGRESQL_PORT_NUMBER
+              value: "5432"
+            - name: POSTGRESQL_VOLUME_DIR
+              value: "/bitnami/postgresql"
+            - name: PGDATA
+              value: "/bitnami/postgresql/data"
+            - name: POSTGRES_USER
+              value: "kong"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kong-postgresql
+                  key: postgresql-password
+            - name: POSTGRES_DB
+              value: "kong"
+            - name: POSTGRESQL_ENABLE_LDAP
+              value: "no"
+          ports:
+            - name: tcp-postgresql
+              containerPort: 5432
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - exec pg_isready -U "kong" -d "kong" -h 127.0.0.1 -p 5432
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - -e
+                - |
+                  exec pg_isready -U "kong" -d "kong" -h 127.0.0.1 -p 5432
+                  [ -f /opt/bitnami/postgresql/tmp/.initialized ] || [ -f /bitnami/postgresql/.initialized ]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+            - name: data
+              mountPath: /bitnami/postgresql
+              subPath: 
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "1Gi"
+---
+# Source: kong/templates/migrate-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kong-migrate
+  namespace: default
+  labels:
+    app.kubernetes.io/name: kong
+    helm.sh/chart: kong-1.1.4
+    app.kubernetes.io/instance: kong
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    helm.sh/hook: post-install, post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kong
+        helm.sh/chart: kong-1.1.4
+        app.kubernetes.io/instance: kong
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/component: migration
+      annotations:
+    spec:
+      
+      restartPolicy: OnFailure
+      containers:
+        - name: kong-migrate
+          image: docker.io/bitnami/kong:2.0.4-debian-10-r19
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+          env:
+            - name: KONG_MIGRATE
+              value: "yes"
+            - name: KONG_EXIT_AFTER_MIGRATE
+              value: "yes"
+            - name: KONG_DATABASE
+              value: "postgres"
+            - name: KONG_PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kong-postgresql
+                  key: postgresql-password
+            - name: KONG_PG_HOST
+              value: kong-postgresql
+            - name: KONG_PG_USER
+              value: kong
+          resources:
+            limits: {}
+            requests: {}

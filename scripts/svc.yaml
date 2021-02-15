@@ -1,0 +1,103 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: microuser
+
+spec:
+  selector:
+    app: user
+
+  ports:
+    - name: userport
+      port: 80
+      targetPort: 8001
+
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: microproduct
+
+spec:
+  selector:
+    app: product
+
+  ports:
+    - name: productport
+      port: 80
+      targetPort: 8002
+    - name: productgrpc
+      port: 9001
+      targetPort: 9001
+
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: microshipping
+
+spec:
+  selector:
+    app: shipping
+
+  ports:
+    - name: shippingport
+      port: 80
+      targetPort: 8004
+
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: microcart
+
+spec:
+  selector:
+    app: cart
+
+  ports:
+    - name: cartport
+      port: 80
+      targetPort: 8003
+
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: microorder
+
+spec:
+  selector:
+    app: order
+
+  ports:
+    - name: orderport
+      port: 80
+      targetPort: 8005
+
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+
+spec:
+  selector:
+    app: redispod
+
+  ports:
+    - name: redisport
+      port: 6379
+
+  type: ClusterIP
+  clusterIP: None

@@ -1,0 +1,112 @@
+---
+# Source: konga/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name:  konga-config
+  labels:
+    app.kubernetes.io/name: konga
+    helm.sh/chart: konga-1.0.0
+    app.kubernetes.io/instance: konga
+    app.kubernetes.io/managed-by: Helm
+data:
+  PORT: "1337"
+  NODE_ENV: development
+  DB_ADAPTER: mysql
+  DB_HOST: mariadb
+  DB_PORT: "3306"
+  DB_USER: micro
+  DB_PASSWORD: micro
+  DB_DATABASE: konga
+  KONGA_LOG_LEVEL: debug
+  
+  TOKEN_SECRET: ""
+  KONGA_SEED_KONG_NODE_DATA_SOURCE_FILE: ""
+  KONGA_SEED_USER_DATA_SOURCE_FILE: ""
+---
+# Source: konga/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: konga
+  labels:
+    app.kubernetes.io/name: konga
+    helm.sh/chart: konga-1.0.0
+    app.kubernetes.io/instance: konga
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: konga
+    app.kubernetes.io/instance: konga
+---
+# Source: konga/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: konga
+  labels:
+    app.kubernetes.io/name: konga
+    helm.sh/chart: konga-1.0.0
+    app.kubernetes.io/instance: konga
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: konga
+      app.kubernetes.io/instance: konga
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: konga
+        app.kubernetes.io/instance: konga
+    spec:
+      volumes:
+      containers:
+        - name: konga
+          image: "pantsel/konga:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 1337
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          envFrom:
+            - configMapRef:
+                name: konga-config
+          resources:
+            {}
+          volumeMounts:
+---
+# Source: konga/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "konga-test-connection"
+  labels:
+    app.kubernetes.io/name: konga
+    helm.sh/chart: konga-1.0.0
+    app.kubernetes.io/instance: konga
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args:  ['konga:80']
+  restartPolicy: Never
