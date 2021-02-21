@@ -1,0 +1,36 @@
+POST http://localhost:8001/api/login
+Content-Type: application/json
+
+{
+  "email": "im@one.com",
+  "password": "passdowr"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("auth_token", response.body.token);
+%}
+
+###
+GET http://localhost:8005/api/orders
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+GET http://localhost:8005/api/orders/1
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
