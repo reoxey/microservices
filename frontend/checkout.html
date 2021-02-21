@@ -15,30 +15,10 @@
 	<link href="https://fonts.googleapis.com/css?family=Poppins:200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&display=swap" rel="stylesheet">
 	
 	<!-- StyleSheet -->
-	
-	<!-- Bootstrap -->
-	<link rel="stylesheet" href="css/bootstrap.css">
-	<!-- Magnific Popup -->
-    <link rel="stylesheet" href="css/magnific-popup.min.css">
-	<!-- Font Awesome -->
-    <link rel="stylesheet" href="css/font-awesome.css">
-	<!-- Fancybox -->
-	<link rel="stylesheet" href="css/jquery.fancybox.min.css">
-	<!-- Themify Icons -->
-    <link rel="stylesheet" href="css/themify-icons.css">
-	<!-- Nice Select CSS -->
-    <link rel="stylesheet" href="css/niceselect.css">
-	<!-- Animate CSS -->
-    <link rel="stylesheet" href="css/animate.css">
-	<!-- Owl Carousel -->
-    <link rel="stylesheet" href="css/owl-carousel.css">
-	<!-- Slicknav -->
-    <link rel="stylesheet" href="css/slicknav.min.css">
+	<link rel="stylesheet" href="css/all.css">
 	
 	<!-- Eshop StyleSheet -->
-	<link rel="stylesheet" href="css/reset.css">
-	<link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="css/responsive.css">
+	<link rel="stylesheet" href="css/style.css">
 
 	
 	
@@ -58,14 +38,13 @@
 		
 		<!-- Header -->
 		<header class="header shop">
-			
 			<div class="middle-inner">
 				<div class="container">
 					<div class="row">
 						<div class="col-lg-2 col-md-2 col-12">
 							<!-- Logo -->
 							<div class="logo">
-								<a href="index.html"><img src="images/logo.png" alt="logo"></a>
+								<a href="./home.html"><img src="images/logo.png" alt="logo"></a>
 							</div>
 							<!--/ End Logo -->
 							<!-- Search Form -->
@@ -101,50 +80,31 @@
 						<div class="col-lg-2 col-md-3 col-12">
 							<div class="right-bar">
 								<!-- Search Form -->
-								<div class="sinlge-bar">
-									<a href="#" class="single-icon"><i class="fa fa-heart-o" aria-hidden="true"></i></a>
-								</div>
-								<div class="sinlge-bar">
-									<a href="#" class="single-icon"><i class="fa fa-user-circle-o" aria-hidden="true"></i></a>
+								<div class="sinlge-bar shopping">
+									<a href="./order.html" class="single-icon"><i class="fa fa-first-order" aria-hidden="true"></i></a>
 								</div>
 								<div class="sinlge-bar shopping">
-									<a href="#" class="single-icon"><i class="fa fa-shopping-cart"></i> <span class="total-count">2</span></a>
-									<!-- Shopping Item -->
+									<a href="#" class="single-icon"><i class="fa fa-user-circle-o" aria-hidden="true"></i></a>
 									<div class="shopping-item">
 										<div class="dropdown-cart-header">
-											<span>2 Items</span>
-											<a href="#">View Cart</a>
+											<span>Hello!</span>
+											<a href="./order.html">My Orders</a>
 										</div>
-										<ul class="shopping-list">
-											<li>
-												<a href="#" class="remove" title="Remove this item"><i class="fa fa-remove"></i></a>
-												<a class="cart-img" href="#"><img src="https://via.placeholder.com/70x70" alt="#"></a>
-												<h4><a href="#">Woman Ring</a></h4>
-												<p class="quantity">1x - <span class="amount">$99.00</span></p>
-											</li>
-											<li>
-												<a href="#" class="remove" title="Remove this item"><i class="fa fa-remove"></i></a>
-												<a class="cart-img" href="#"><img src="https://via.placeholder.com/70x70" alt="#"></a>
-												<h4><a href="#">Woman Necklace</a></h4>
-												<p class="quantity">1x - <span class="amount">$35.00</span></p>
-											</li>
-										</ul>
 										<div class="bottom">
-											<div class="total">
-												<span>Total</span>
-												<span class="total-amount">$134.00</span>
-											</div>
-											<a href="checkout.html" class="btn animate">Checkout</a>
+											<a id="log-out" href="#" class="btn animate">Logout</a>
 										</div>
 									</div>
-									<!--/ End Shopping Item -->
+								</div>
+								<div class="sinlge-bar shopping">
+									<a id="total-count" href="./cart.html" class="single-icon"><i class="fa fa-shopping-cart"></i> </a>
+									<div id="shopping-cart" class="shopping-item">
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-			
 		</header>
 		<!--/ End Header -->
 	
@@ -582,7 +542,7 @@
 							<div class="inner">
 								<h4>Newsletter</h4>
 								<p> Subscribe to our newsletter and get <span>10%</span> off your first purchase</p>
-								<form action="#" method="get" target="_blank" class="newsletter-inner">
+								<form action="mail/mail.php" method="get" target="_blank" class="newsletter-inner">
 									<input name="EMAIL" placeholder="Your email address" required="" type="email">
 									<button class="btn">Subscribe</button>
 								</form>
@@ -604,7 +564,7 @@
 						<div class="row">
 							<div class="col-lg-6 col-12">
 								<div class="left">
-									<p>Copyright © 2020 <a href="http://www.wpthemesgrid.com" target="_blank">Wpthemesgrid</a>  -  All Rights Reserved. Used as template here.</p>
+									<p>Copyright © 2020 <a href="http://www.wpthemesgrid.com" target="_blank">Wpthemesgrid</a>  -  All Rights Reserved.</p>
 								</div>
 							</div>
 							<div class="col-lg-6 col-12">
