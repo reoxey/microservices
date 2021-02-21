@@ -2,16 +2,16 @@ FROM golang:1.15-alpine as builder
 
 LABEL maintainer="reoxey"
 
-WORKDIR /micro/order
+WORKDIR /micro/user
 
 COPY . .
 
 RUN CGO_ENABLED=0 go test . && go build -o app .
 
-FROM scratch
+FROM alpine
 
-WORKDIR /micro
+COPY --from=builder /micro/user/app .
 
-COPY --from=builder /micro/order .
+EXPOSE 8001
 
-CMD ["./app"]
+CMD ["/app"]

@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"os"
+	"strings"
 
 	"order/consumer"
 	"order/core"
@@ -14,11 +16,13 @@ import (
 
 func main() {
 
+	dsn := os.Getenv("DB_DSN")
+	dbTable := os.Getenv("DB_TABLE")
+	kafkaHosts := strings.Split(os.Getenv("KAFKA_HOST"), ",")
+
 	log := logger.New()
 
-	dsn := ""
-
-	dbRepo, err := mysql.NewRepo(dsn, "orders", 10)
+	dbRepo, err := mysql.NewRepo(dsn, dbTable, 10)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -26,16 +30,11 @@ func main() {
 	service := core.NewService(
 		dbRepo,
 		jwtauth.New(),
-		kafka.NewProducer([]string{
-			"localhost:9092",
-		}, log),
+		kafka.NewProducer(kafkaHosts, log),
 	)
 
 	cons := consumer.Port{
-		Sub: kafka.NewConsumer(
-			[]string{"localhost:9092"},
-			log,
-		),
+		Sub: kafka.NewConsumer(kafkaHosts, log),
 		Service:   service,
 		Log:       log,
 	}
