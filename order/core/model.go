@@ -24,13 +24,13 @@ type Order struct {
 	Buyer     int         `json:"buyer,omitempty"`
 	Items     []*Item     `json:"items,omitempty"`
 	Payment   *Payment    `json:"payment,omitempty"`
-	Status    OrderStatus `json:"status,omitempty"`
+	Status    OrderStatus `json:"status"`
 	CreatedAt string      `json:"created_at"`
 }
 
 type Payment struct {
 	Total float64     `json:"total,omitempty"`
-	Type  PaymentType `json:"type,omitempty"`
+	Type  PaymentType `json:"type"`
 }
 
 type Item struct {

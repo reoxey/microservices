@@ -41,7 +41,7 @@ func (m mysqlRepo) ByID(ctx context.Context, cartId int) (core.Cart, error) {
 		return cart, err
 	}
 
-	rows, err := m.db.QueryContext(ctx, "SELECT id, name, price, stocks, qty FROM "+m.table+"_items WHERE cart_id = ?", cartId)
+	rows, err := m.db.QueryContext(ctx, "SELECT id, name, price, old_price, stocks, qty FROM "+m.table+"_items WHERE cart_id = ?", cartId)
 	if err != nil {
 		return cart, err
 	}
@@ -49,7 +49,7 @@ func (m mysqlRepo) ByID(ctx context.Context, cartId int) (core.Cart, error) {
 	for rows.Next() {
 		item := &core.Item{}
 
-		if err = rows.Scan(&item.Id, &item.Name, &item.Price, &item.Stocks, &item.Qty); err != nil {
+		if err = rows.Scan(&item.Id, &item.Name, &item.Price, &item.OldPrice, &item.Stocks, &item.Qty); err != nil {
 			return cart, err
 		}
 		cart.Items = append(cart.Items, item)

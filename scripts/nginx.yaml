@@ -1,0 +1,400 @@
+# Source: nginx-ingress-controller/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nginx-ingress-nginx-ingress-controller
+  labels:
+    app: nginx-ingress-controller
+    chart: nginx-ingress-controller-5.3.20
+    release: nginx-ingress
+    heritage: Helm
+---
+# Source: nginx-ingress-controller/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: nginx-ingress-nginx-ingress-controller
+  labels:
+    app: nginx-ingress-controller
+    chart: nginx-ingress-controller-5.3.20
+    release: nginx-ingress
+    heritage: Helm
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - endpoints
+      - nodes
+      - pods
+      - secrets
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    verbs:
+      - get
+      - list
+      - update
+      - watch
+  - apiGroups:
+      - extensions
+      - "networking.k8s.io"
+    resources:
+      - ingresses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  - apiGroups:
+      - extensions
+      - "networking.k8s.io"
+    resources:
+      - ingresses/status
+    verbs:
+      - update
+---
+# Source: nginx-ingress-controller/templates/clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: nginx-ingress-nginx-ingress-controller
+  labels:
+    app: nginx-ingress-controller
+    chart: nginx-ingress-controller-5.3.20
+    release: nginx-ingress
+    heritage: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: nginx-ingress-nginx-ingress-controller
+subjects:
+  - kind: ServiceAccount
+    name: nginx-ingress-nginx-ingress-controller
+    namespace: default
+---
+# Source: nginx-ingress-controller/templates/role.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: nginx-ingress-nginx-ingress-controller
+  labels:
+    app: nginx-ingress-controller
+    chart: nginx-ingress-controller-5.3.20
+    release: nginx-ingress
+    heritage: Helm
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - pods
+      - secrets
+      - endpoints
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    verbs:
+      - get
+      - list
+      - update
+      - watch
+  - apiGroups:
+      - extensions
+      - "networking.k8s.io"
+    resources:
+      - ingresses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - "networking.k8s.io"
+    resources:
+      - ingresses/status
+    verbs:
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    resourceNames:
+      - ingress-controller-leader-nginx
+    verbs:
+      - get
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - create
+  - apiGroups:
+      - ""
+    resources:
+      - endpoints
+    verbs:
+      - create
+      - get
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+---
+# Source: nginx-ingress-controller/templates/rolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: nginx-ingress-nginx-ingress-controller
+  labels:
+    app: nginx-ingress-controller
+    chart: nginx-ingress-controller-5.3.20
+    release: nginx-ingress
+    heritage: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: nginx-ingress-nginx-ingress-controller
+subjects:
+  - kind: ServiceAccount
+    name: nginx-ingress-nginx-ingress-controller
+    namespace: default
+---
+# Source: nginx-ingress-controller/templates/controller-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-ingress-nginx-ingress-controller
+  labels:
+    app: nginx-ingress-controller
+    chart: nginx-ingress-controller-5.3.20
+    release: nginx-ingress
+    heritage: Helm
+    component: controller
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: https
+  selector:
+    app: nginx-ingress-controller
+    release: nginx-ingress
+    component: controller
+---
+# Source: nginx-ingress-controller/templates/default-backend-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-ingress-nginx-ingress-controller-default-backend
+  labels:
+    app: nginx-ingress-controller
+    chart: nginx-ingress-controller-5.3.20
+    release: nginx-ingress
+    heritage: Helm
+    component: default-backend
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+  selector:
+    app: nginx-ingress-controller
+    release: nginx-ingress
+    component: default-backend
+---
+# Source: nginx-ingress-controller/templates/controller-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-ingress-nginx-ingress-controller
+  labels:
+    app: nginx-ingress-controller
+    chart: nginx-ingress-controller-5.3.20
+    release: nginx-ingress
+    heritage: Helm
+    component: controller
+spec:
+  selector:
+    matchLabels:
+      app: nginx-ingress-controller
+      release: nginx-ingress
+      component: controller
+  replicas: 1
+  revisionHistoryLimit: 10
+  strategy:
+    {}
+  minReadySeconds: 0
+  template:
+    metadata:
+      labels:
+        app: nginx-ingress-controller
+        chart: nginx-ingress-controller-5.3.20
+        release: nginx-ingress
+        heritage: Helm
+        component: controller
+    spec:      
+      dnsPolicy: ClusterFirst
+      hostNetwork: false
+      serviceAccountName: nginx-ingress-nginx-ingress-controller
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: nginx-ingress-controller-controller
+          image: docker.io/bitnami/nginx-ingress-controller:0.30.0-debian-10-r84
+          imagePullPolicy: "IfNotPresent"
+          args:
+            - /nginx-ingress-controller
+            - --default-backend-service=default/nginx-ingress-nginx-ingress-controller-default-backend
+            - --publish-service=default/nginx-ingress-nginx-ingress-controller
+            - --election-id=ingress-controller-leader
+            - --ingress-class=nginx
+            - --configmap=default/nginx-ingress-nginx-ingress-controller
+          securityContext:
+            capabilities:
+              drop: ["ALL"]
+              add: ["NET_BIND_SERVICE"]
+            runAsUser: 1001
+            allowPrivilegeEscalation: 
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 10254
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 10254
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 3
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            - name: https
+              containerPort: 443
+              protocol: TCP
+          resources:
+            limits: {}
+            requests: {}
+---
+# Source: nginx-ingress-controller/templates/default-backend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-ingress-nginx-ingress-controller-default-backend
+  labels:
+    app: nginx-ingress-controller
+    chart: nginx-ingress-controller-5.3.20
+    release: nginx-ingress
+    heritage: Helm
+    component: default-backend
+spec:
+  selector:
+    matchLabels:
+      app: nginx-ingress-controller
+      release: nginx-ingress
+      component: default-backend
+  replicas: 1
+  revisionHistoryLimit: 10
+  template:
+    metadata:
+      labels:
+        app: nginx-ingress-controller
+        chart: nginx-ingress-controller-5.3.20
+        release: nginx-ingress
+        heritage: Helm
+        component: default-backend
+    spec:      
+      serviceAccountName: nginx-ingress-nginx-ingress-controller
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: nginx-ingress-controller-default-backend
+          image: docker.io/bitnami/nginx:1.17.10-debian-10-r26
+          imagePullPolicy: "IfNotPresent"
+          args:
+          securityContext:
+            runAsUser: 1001
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            limits: {}
+            requests: {}

@@ -141,6 +141,41 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: order-service
+  labels:
+    app: order
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order
+
+  template:
+    metadata:
+      labels:
+        app: order
+    spec:
+      containers:
+        - name: order
+          image: docker.mobobeat.com/microorder:v1.0
+          env:
+            - name: DB_DSN
+              value: "micro:micro@tcp(mariadb:3306)/micro"
+            - name: DB_TABLE
+              value: "orders"
+            - name: REDIS
+              value: "redis"
+            - name: KAFKA_HOST
+              value: "kafka"
+          ports:
+            - containerPort: 8005
+      imagePullSecrets:
+        - name: regcred
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
   name: redisdb
   labels:
     app: redispod

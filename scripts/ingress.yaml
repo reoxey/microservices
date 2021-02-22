@@ -1,0 +1,54 @@
+# cert-manager  -- kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.15.0/cert-manager.yaml
+# only in case of Lets encrypt SSL
+
+## Ingress Controller
+
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: microngress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ingress.allow-http: "true"
+spec:
+  backend:
+    serviceName: kong
+    servicePort: 80
+  rules:
+    - host: micro.reoxey.com
+      http:
+        paths:
+          - backend:
+              serviceName: kong
+              servicePort: 80
+    - host: pma.reoxey.com
+      http:
+        paths:
+          - backend:
+              serviceName: pma-phpmyadmin
+              servicePort: 80
+    - host: konga.reoxey.com
+      http:
+        paths:
+          - backend:
+              serviceName: konga
+              servicePort: 80
+
+
+---
+## Cluster Issuer
+
+# apiVersion: cert-manager.io/v1alpha2
+# kind: ClusterIssuer
+# metadata:
+#   name: letsencrypt-prod
+# spec:
+#   acme:
+#     server: https://acme-v02.api.letsencrypt.org/directory
+#     email: me@reoxey.com
+#     privateKeySecretRef:
+#       name: letsencrypt-prod
+#     solvers:
+#       - http01:
+#           ingress:
+#             name: micro-ingress
