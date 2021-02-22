@@ -126,7 +126,7 @@ var KTLoginGeneral = function() {
           const data = '{"email": "'+$('#login-email').val()+'", "password": "'+$("#login-pass").val()+'"}';
 
           $.ajax({
-              url: 'http://35.202.215.152/login',
+              url: 'http://micro.reoxey.com/login',
               method: "POST",
               data: data,
               contentType: "application/json",

@@ -10,10 +10,10 @@ AJAX("orders", "GET", "", function(res, status, xhr){
         for(let ob of res){
             let textColour = "text-warning";
             switch (ob.status) {
-                case 2: textColour = "text-success"; break;
-                case 3: textColour = "text-danger"; break;
-                case 4: textColour = "text-primary"; break;
-                case 5: textColour = ""
+                case 1: textColour = "text-success"; break;
+                case 2: textColour = "text-danger"; break;
+                case 3: textColour = "text-primary"; break;
+                case 4: textColour = ""
             }
             html += '<section class="shop-services section home mt-1"><div class="container"><div class="row"><div class="col-6"><div class="single-service"><h3 class="mb-2">#'+ob.id+'</h4><h6>'+ob.created_at+'</p></div></div><div class="col-6"><div class="single-service"><h4 class="mb-2 text-right d-block w-100 '+textColour+'">'+orderStatus[ob.status]+'</h4><h6 class="pull-right text-right w-100 d-block">'+PaymentMethod[ob.payment.type]+'</h6></div></div><div class="col-2 mt-3"></div><div class="col-10 mt-3"><table class="table shopping-summery"><tbody>';
 
@@ -23,5 +23,7 @@ AJAX("orders", "GET", "", function(res, status, xhr){
 
             html += '<tr><td></td><td></td><td></td><td><strong>Total</strong></td><td class="total-amount" data-title="Total"><strong>$'+round(ob.payment.total)+'</strong></td></tr></tbody></table></div></div></div> </section>';
         }
+
+        ordersList.html(html)
     }
 })

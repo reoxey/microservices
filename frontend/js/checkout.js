@@ -79,7 +79,7 @@ $('#checkout').on('click', function(){
     const data = '{"address_id": '+addr+','+
     '"payment_method": '+$('input[name="payment"]:checked').val()+'}';
 
-    AJAX("cart/checkout", "POST", data, function(res, status, xhr){
+    AJAX("cart/"+cartId+"/checkout", "POST", data, function(res, status, xhr){
         if(xhr.status === 200) {
 
             window.location = "./home.html";
