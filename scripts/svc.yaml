@@ -101,3 +101,20 @@ spec:
 
   type: ClusterIP
   clusterIP: None
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: microfront
+
+spec:
+  selector:
+    app: frontend
+
+  ports:
+    - name: frontport
+      port: 80
+      targetPort: 80
+
+  type: ClusterIP

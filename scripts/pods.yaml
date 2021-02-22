@@ -196,3 +196,28 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 6379
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-service
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: docker.mobobeat.com/frontend:v1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80

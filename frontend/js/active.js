@@ -374,9 +374,15 @@ function triggerCartQtyTimeout(pid, qty){
   function loadCartItems(){
 	AJAX("cart/"+cartId, "GET", "", function(res, status, xhr){
 		if (xhr.status === 200) {
+			const mainCart = $('#shopping-cart-area');
 			const obj = $('#shopping-cart')
 			console.log(res)
-			if(res.items === null) return;
+			if(res.items === null) {
+				if(mainCart.length) mainCart.html('<section class="shop-services section home"><div class="container"><div class="row"><div class="col-12"><div class="single-service"><h5 class="mb-2">Your Cart is empty</h5> <a href="./home.html" class="btn pull-right text-light">Continue shopping</a></div></div></div></div> </section>');
+				obj.html('');
+				$('#total-count').html('<i class="fa fa-shopping-cart"></i>');
+				return;
+			}
 			let cartItems = "";
 			let cartCount = 0;
 			for (let ob of res.items) {
@@ -399,17 +405,16 @@ function triggerCartQtyTimeout(pid, qty){
 			'<a href="checkout.html" class="btn animate">Checkout</a></div>'
 			)
 
-			const mainCart = $('#shopping-cart-area');
 			if (mainCart.length) {
 				let html = '<table class="table shopping-summery"><thead><tr class="main-hading"><th>PRODUCT</th><th>NAME</th><th class="text-center">UNIT PRICE</th><th class="text-center">QUANTITY</th><th class="text-center">TOTAL</th><th class="text-center"><i class="ti-trash remove-icon"></i></th></tr></thead><tbody>';
 
 				for(let ob of res.items) {
 					let old_price = '';
 					if (ob.old_price){
-						old_price = '$'+old_price;
+						old_price = '<span class="oldprice">$'+ob.old_price+'</span><br>';
 					}
 
-					html += '<tr><td class="image" data-title="No"><img src="https://via.placeholder.com/100x100" alt="#"></td><td class="product-des" data-title="Description"><p class="product-name"><a href="#">'+ob.name+'</a></p><p class="product-des">Maboriosam in a tonto nesciung eget distingy magndapibus.</p></td><td class="price" data-title="Price"><span class="oldprice">'+old_price+'</span><span>$'+ob.price+'</span></td><td class="qty" data-title="Qty"><div class="input-group"><div class="button minus"> <button type="button" class="btn btn-primary btn-number" data-type="minus" data-field="quant['+ob.id+']"> <i class="ti-minus"></i> </button></div> <input type="text" name="quant['+ob.id+']" class="input-number" data-min="1" data-max="'+ob.stocks+'" value="'+ob.qty+'" data-pid="'+ob.id+'"><div class="button plus"> <button type="button" class="btn btn-primary btn-number" data-type="plus" data-field="quant['+ob.id+']"> <i class="ti-plus"></i> </button></div></div></td><td class="total-amount" data-title="Total"><span>$'+round(ob.qty*ob.price)+'</span></td><td class="action" data-title="Remove"><a href="#" onclick="removeFromCart('+ob.id+')"><i class="ti-trash remove-icon"></i></a></td></tr>'
+					html += '<tr><td class="image" data-title="No"><img src="https://via.placeholder.com/100x100" alt="#"></td><td class="product-des" data-title="Description"><p class="product-name"><a href="#">'+ob.name+'</a></p><p class="product-des">Maboriosam in a tonto nesciung eget distingy magndapibus.</p></td><td class="price" data-title="Price">'+old_price+'<span>$'+ob.price+'</span></td><td class="qty" data-title="Qty"><div class="input-group"><div class="button minus"> <button type="button" class="btn btn-primary btn-number" data-type="minus" data-field="quant['+ob.id+']"> <i class="ti-minus"></i> </button></div> <input type="text" name="quant['+ob.id+']" class="input-number" data-min="1" data-max="'+ob.stocks+'" value="'+ob.qty+'" data-pid="'+ob.id+'"><div class="button plus"> <button type="button" class="btn btn-primary btn-number" data-type="plus" data-field="quant['+ob.id+']"> <i class="ti-plus"></i> </button></div></div></td><td class="total-amount" data-title="Total"><span>$'+round(ob.qty*ob.price)+'</span></td><td class="action" data-title="Remove"><a href="#" onclick="removeFromCart('+ob.id+')"><i class="ti-trash remove-icon"></i></a></td></tr>'
 				}
 				html += '</tbody></table>';
 				mainCart.html(html);
@@ -432,6 +437,7 @@ function triggerCartQtyTimeout(pid, qty){
 	  AJAX("cart/"+cartId+"/"+pid, "DELETE", "", function(res, status, xhr){
 		  if(xhr.status === 200) {
 			  loadCartItems()
+			  alert
 		  }
 	  })
   }
