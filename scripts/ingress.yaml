@@ -33,6 +33,12 @@ spec:
           - backend:
               serviceName: konga
               servicePort: 80
+    - host: cart.reoxey.com
+      http:
+        paths:
+          - backend:
+              serviceName: microfront
+              servicePort: 80
 
 
 ---

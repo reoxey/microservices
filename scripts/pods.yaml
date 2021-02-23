@@ -120,7 +120,7 @@ spec:
     spec:
       containers:
         - name: cart
-          image: docker.mobobeat.com/microcart:v1.0
+          image: docker.mobobeat.com/microcart:v1.1
           env:
             - name: DB_DSN
               value: "micro:micro@tcp(mariadb:3306)/micro"
@@ -218,6 +218,7 @@ spec:
       containers:
         - name: frontend
           image: docker.mobobeat.com/frontend:v1.0
-          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
+      imagePullSecrets:
+        - name: regcred
