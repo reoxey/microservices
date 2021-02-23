@@ -381,6 +381,9 @@ function triggerCartQtyTimeout(pid, qty){
 				if(mainCart.length) mainCart.html('<section class="shop-services section home"><div class="container"><div class="row"><div class="col-12"><div class="single-service"><h5 class="mb-2">Your Cart is empty</h5> <a href="./home.html" class="btn pull-right text-light">Continue shopping</a></div></div></div></div> </section>');
 				obj.html('');
 				$('#total-count').html('<i class="fa fa-shopping-cart"></i>');
+				$('#total-amount').html('');
+				if($('.checkout-form').length) 
+					window.location = './cart.html';
 				return;
 			}
 			let cartItems = "";
