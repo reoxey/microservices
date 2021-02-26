@@ -1,9 +1,29 @@
-
 # E-commerce Demo - Golang Hexagonal Microservices
 
-`protoc -I catalogpb/ catalogpb/product.proto --go_out=plugins=grpc:.`
+### Technologies and patterns:
 
+- Hexagonal Principle
+- Docker
+- Kubernetes
+- Mysql as main db
+- Redis as Cache
+- Kafka / RabbitMQ as Queue
+- Kong API Gateway
+- gRPC for sync communication
+- JWT Authorization
+- GIN for REST API
 
-`kafka-console-producer.sh --broker-list 127.0.0.1:9092 --topic jobber`
+### Microservices in the demo are:
 
-`kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic jobber --from-beginning`
+- **User** - Handle Authentications through JWT
+- **Product** - Store products catalog and inventory
+- **Shipping** - Store user addresses and order shipping details
+- **Cart** - Shopping cart
+- **Order** - Stores items from cart, update payment details and shipping status
+- **UI** - Web frontend exposed through API gateway which interacts with all microservices.
+
+#### ---
+
+Kubernetes helm scripts are present in the `scripts` directory which are used in the project.
+`.http` can be used to test functionality of individual services. `ecom.http` will test the combined functionality of
+all services.
