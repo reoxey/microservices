@@ -22,6 +22,10 @@
 - **Order** - Stores items from cart, update payment details and shipping status
 - **UI** - Web frontend exposed through API gateway which interacts with all microservices.
 
+### Design
+
+![alt text](https://raw.githubusercontent.com/reoxey/microservices/master/img/ms.png)
+
 #### ---
 
 Kubernetes helm scripts are present in the `scripts` directory which are used in the project.
