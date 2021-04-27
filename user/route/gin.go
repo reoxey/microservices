@@ -4,8 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"user/api"
-	"user/logger"
 	"user/core"
+	"user/logger"
 )
 
 type Gin struct {
