@@ -2,8 +2,12 @@ package main
 
 import (
 	"context"
+	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
 	"order/consumer"
 	"order/core"
@@ -44,7 +48,29 @@ func main() {
 
 	r.Handle(service)
 
-	if err = r.Run(":8005"); err != nil {
-		log.Fatal(err)
+	srv := &http.Server{
+		Addr:    ":8005",
+		Handler: r,
 	}
+
+	go func() { // started http server
+		if err = srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+
+	// channel listening for interrupts to ensure graceful shutdown of the http server
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Server forced to shutdown:", err)
+	}
+
+	log.Println("Server exiting")
 }

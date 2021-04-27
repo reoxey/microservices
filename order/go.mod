@@ -9,5 +9,4 @@ require (
 	github.com/segmentio/kafka-go v0.4.9
 	github.com/streadway/amqp v1.0.0
 	google.golang.org/grpc v1.35.0 // indirect
-	google.golang.org/protobuf v1.25.0 // indirect
 )
