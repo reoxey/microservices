@@ -11,9 +11,9 @@ import (
 
 	"google.golang.org/grpc"
 
-	"cart/core"
 	"cart/catalogpb"
 	"cart/consumer"
+	"cart/core"
 	"cart/jwtauth"
 	"cart/logger"
 	"cart/queue/kafka"
@@ -46,12 +46,12 @@ func main() {
 		jwtauth.New(),
 		catalogpb.NewCatalogClient(conn),
 		kafka.NewProducer(kafkaHosts, log),
-		)
+	)
 
 	cons := consumer.Port{
-		Sub: kafka.NewConsumer(kafkaHosts, log),
-		Service:   service,
-		Log:       log,
+		Sub:     kafka.NewConsumer(kafkaHosts, log),
+		Service: service,
+		Log:     log,
 	}
 	go cons.Run(context.Background())
 

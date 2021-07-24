@@ -12,9 +12,9 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"user/cache"
+	"user/core"
 	"user/jwtauth"
 	"user/logger"
-	"user/core"
 	"user/repo/mock"
 	"user/route"
 )
@@ -50,12 +50,12 @@ func TestUser(t *testing.T) {
 	defer ts.Close()
 
 	tests := []struct {
-		reason string
+		reason   string
 		endpoint string
-		method string
-		status int
-		payload io.Reader
-		isLogin	bool
+		method   string
+		status   int
+		payload  io.Reader
+		isLogin  bool
 	}{
 		{
 			"Should login with auth",
