@@ -7,36 +7,35 @@ import (
 	"github.com/segmentio/kafka-go"
 
 	"cart/core"
-	"cart/logger"
+	log "cart/logger"
 )
 
-func NewProducer(dsn []string, log *logger.Logger) core.Publisher  {
-	return &queue{dsn: dsn, log: log}
+func NewProducer(dsn []string) core.Publisher {
+	return &queue{dsn: dsn}
 }
 
 func (q queue) Publish(ctx context.Context, msg *core.Message) error {
 
 	w := &kafka.Writer{
 		Addr:     kafka.TCP(q.dsn[0]),
-		Topic:   msg.Topic,
+		Topic:    msg.Topic,
 		Balancer: &kafka.LeastBytes{},
-		Logger: q.log,
+		Logger:   log.Obj(),
 	}
 
 	str, err := json.Marshal(&msg)
 	if err != nil {
-		q.log.Println("ERROR:kafka.Publish."+msg.Topic, err)
-		return err
+		return log.Err(err)
 	}
 
 	err = w.WriteMessages(ctx, kafka.Message{
-		Key: []byte("one"),
+		Key:   []byte("one"),
 		Value: str,
 	})
 
 	if err != nil {
-		q.log.Println("ERROR:kafka.Publish."+msg.Topic, err)
+		return log.Err(err)
 	}
 
-	return err
+	return nil
 }

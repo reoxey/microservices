@@ -5,15 +5,13 @@ import (
 
 	"cart/api"
 	"cart/core"
-	"cart/logger"
 )
 
 type Gin struct {
 	*gin.Engine
-	log *logger.Logger
 }
 
-func New(l *logger.Logger, debug bool) *Gin {
+func New(debug bool) *Gin {
 	g := gin.New()
 	if !debug {
 		gin.SetMode(gin.ReleaseMode)
@@ -22,13 +20,11 @@ func New(l *logger.Logger, debug bool) *Gin {
 	g.Use(gin.Recovery())
 	return &Gin{
 		g,
-		l,
 	}
 }
 
 func (g *Gin) Handle(cs core.CartService) {
-	ch := api.NewHandler(cs, g.log)
-
+	ch := api.NewHandler(cs)
 
 	authRoute := g.Group("/api", ch.AuthorizeUser())
 

@@ -23,9 +23,11 @@ type CartHandler interface {
 	AuthorizeUser() gin.HandlerFunc
 }
 
+var errInvalidId = fmt.Errorf("invalid id type")
+var errNotAuthorized = fmt.Errorf("Not Authorize")
+
 type handler struct {
 	service core.CartService
-	log     *logger.Logger
 }
 
 const authVerify = "AUTHORIZE"
@@ -33,13 +35,13 @@ const authVerify = "AUTHORIZE"
 func (h handler) CreateCart(c *gin.Context) {
 	buyer, err := verifyAuth(c)
 	if err != nil {
-		h.log.Println("ERROR:handler.CreateCart", err)
+		log.Error(err)
 		return
 	}
 
 	id, err := h.service.New(c, buyer)
 	if err != nil {
-		h.log.Println("ERROR:handler.CreateCart", err)
+		log.Error(err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, nil)
 		return
 	}
@@ -52,13 +54,13 @@ func (h handler) CreateCart(c *gin.Context) {
 func (h handler) GetCart(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		h.log.Println("WARNING:handler.GetCart", "invalid id type")
+		log.Error(errInvalidId)
 		c.AbortWithStatusJSON(http.StatusBadRequest, nil)
 		return
 	}
 	cart, err := h.service.Show(c, id)
 	if err != nil {
-		h.log.Println("ERROR:handler.GetCart", err)
+		log.Error(err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, nil)
 		return
 	}
@@ -68,19 +70,19 @@ func (h handler) GetCart(c *gin.Context) {
 func (h handler) AddToCart(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		h.log.Println("WARNING:handler.AddToCart", "invalid id type")
+		log.Error(errInvalidId)
 		c.AbortWithStatusJSON(http.StatusBadRequest, nil)
 		return
 	}
 
 	var item *core.Item
 	if err := c.Bind(&item); err != nil {
-		h.log.Println("ERROR:handler.AddToCart", err)
+		log.Error(err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, nil)
 		return
 	}
 	if err = h.service.AddToCart(c, id, item); err != nil {
-		h.log.Println("ERROR:handler.AddToCart", err)
+		log.Error(err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, nil)
 		return
 	}
@@ -90,24 +92,24 @@ func (h handler) AddToCart(c *gin.Context) {
 func (h handler) UpdateQty(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		h.log.Println("WARNING:handler.UpdateQty", "invalid id type")
+		log.Error(errInvalidId)
 		c.AbortWithStatusJSON(http.StatusBadRequest, nil)
 		return
 	}
 
 	var item *core.Item
 	if err := c.Bind(&item); err != nil {
-		h.log.Println("ERROR:handler.UpdateQty", err)
+		log.Error(err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, nil)
 		return
 	}
 	if err = h.service.UpdateQty(c, id, item); err != nil {
 		if err == mysql.NoRowsAffected {
-			h.log.Println("WARNING:handler.UpdateQty", err)
+			log.Error(err)
 			c.AbortWithStatusJSON(http.StatusOK, nil)
 			return
 		}
-		h.log.Println("ERROR:handler.UpdateQty", err)
+		log.Error(err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, nil)
 		return
 	}
@@ -117,23 +119,23 @@ func (h handler) UpdateQty(c *gin.Context) {
 func (h handler) RemoveItems(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		h.log.Println("WARNING:handler.RemoveItems", "invalid id type")
+		log.Error(errInvalidId)
 		c.AbortWithStatusJSON(http.StatusBadRequest, nil)
 		return
 	}
 	itemId, err := strconv.Atoi(c.Param("item_id"))
 	if err != nil {
-		h.log.Println("WARNING:handler.RemoveItems", "invalid item_id type")
+		log.Error(errInvalidId)
 		c.AbortWithStatusJSON(http.StatusBadRequest, nil)
 		return
 	}
 	if err = h.service.DeleteItems(c, id, itemId); err != nil {
 		if err == mysql.NoRowsAffected {
-			h.log.Println("WARNING:handler.RemoveItems", err)
+			log.Error(err)
 			c.AbortWithStatusJSON(http.StatusOK, nil)
 			return
 		}
-		h.log.Println("ERROR:handler.RemoveItems", err)
+		log.Error(err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, nil)
 		return
 	}
@@ -145,7 +147,7 @@ func (h handler) AuthorizeUser() gin.HandlerFunc {
 
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			h.log.Println("WARNING:handler.AuthorizeUser", "Not Authorize")
+			log.Error(errNotAuthorized)
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -153,13 +155,13 @@ func (h handler) AuthorizeUser() gin.HandlerFunc {
 
 		auth, err := h.service.Authorize(tokenString)
 		if err != nil {
-			h.log.Println("ERROR:handler.AuthorizeUser", err)
+			log.Error(err)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, nil)
 			return
 		}
 
 		if auth == nil {
-			h.log.Println("WARNING:handler.AuthorizeUser", "Not Authorize")
+			log.Error(errNotAuthorized)
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -172,28 +174,28 @@ func (h handler) Checkout(c *gin.Context) {
 
 	cartId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		h.log.Println("WARNING:handler.Checkout", "invalid id type")
+		log.Error(errInvalidId)
 		c.AbortWithStatusJSON(http.StatusBadRequest, nil)
 		return
 	}
 
 	var checkout *core.Checkout
 	if err = c.Bind(&checkout); err != nil {
-		h.log.Println("ERROR:handler.Checkout", err)
+		log.Error(err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, nil)
 		return
 	}
 
 	if err = h.service.Checkout(c, checkout, cartId); err != nil {
-		h.log.Println("ERROR:handler.Checkout", err)
+		log.Error(err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, nil)
 		return
 	}
 	c.JSON(http.StatusOK, nil)
 }
 
-func NewHandler(s core.CartService, log *logger.Logger) CartHandler {
-	return &handler{s, log}
+func NewHandler(s core.CartService) CartHandler {
+	return &handler{s}
 }
 
 func verifyAuth(c *gin.Context) (id int, err error) {
@@ -209,7 +211,7 @@ func verifyAuth(c *gin.Context) (id int, err error) {
 
 	if !tokenMap["is_admin"].(bool) {
 		c.AbortWithStatusJSON(http.StatusForbidden, nil)
-		return id, errors.New("user denied "+tokenMap["email"].(string))
+		return id, errors.New("user denied " + tokenMap["email"].(string))
 	}
 
 	return

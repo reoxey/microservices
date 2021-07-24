@@ -13,7 +13,6 @@ import (
 
 type queue struct {
 	dsn []string
-	log *logger.Logger
 }
 
 func (q queue) Subscribe(ctx context.Context, topic string, rec chan *core.Message) {
@@ -24,13 +23,13 @@ func (q queue) Subscribe(ctx context.Context, topic string, rec chan *core.Messa
 		//StartOffset: kafka.LastOffset,
 		MinBytes: 5,
 		MaxBytes: 1e6,
-		MaxWait: 1 * time.Second,
+		MaxWait:  1 * time.Second,
 		//Logger: q.log,
 	})
 	for {
 		m, err := r.ReadMessage(ctx)
 		if err != nil {
-			q.log.Println("ERROR:kafka.Subscribe", err)
+			log.Error(err)
 			continue
 		}
 
@@ -43,9 +42,8 @@ func (q queue) Subscribe(ctx context.Context, topic string, rec chan *core.Messa
 	}
 }
 
-func NewConsumer(dsn []string, log *logger.Logger) core.Subscriber {
+func NewConsumer(dsn []string) core.Subscriber {
 	return queue{
 		dsn: dsn,
-		log: log,
 	}
 }

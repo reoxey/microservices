@@ -13,7 +13,6 @@ import (
 type Port struct {
 	Sub     core.Subscriber
 	Service core.CartService
-	Log     *logger.Logger
 }
 
 func (p *Port) Run(ctx context.Context) {
@@ -33,11 +32,11 @@ func (p *Port) Run(ctx context.Context) {
 
 			id, err := strconv.Atoi(arr[0])
 			if err != nil {
-				p.Log.Println("ERROR:consumer.Run.product", err)
+				log.Error(err)
 			}
 			price, err := strconv.ParseFloat(arr[1], 64)
 			if err != nil {
-				p.Log.Println("ERROR:consumer.Run.product", err)
+				log.Error(err)
 			}
 
 			err = p.Service.UpdateItems(ctx, &core.Item{
@@ -45,7 +44,7 @@ func (p *Port) Run(ctx context.Context) {
 				Price: price,
 			})
 			if err != nil {
-				p.Log.Println("ERROR:consumer.Run.product", err)
+				log.Error(err)
 			}
 		}
 	}

@@ -21,41 +21,22 @@ import (
 	"cart/route"
 )
 
+var dsn = os.Getenv("DB_DSN")
+var dbTable = os.Getenv("DB_TABLE")
+var grpcPort = os.Getenv("PRODUCT_GRPC")
+var kafkaHosts = strings.Split(os.Getenv("KAFKA_HOST"), ",")
+
 func main() {
 
-	dsn := os.Getenv("DB_DSN")
-	dbTable := os.Getenv("DB_TABLE")
-	grpcPort := os.Getenv("PRODUCT_GRPC")
-	kafkaHosts := strings.Split(os.Getenv("KAFKA_HOST"), ",")
-
-	log := logger.New()
-
-	dbRepo, err := mysql.NewRepo(dsn, dbTable, 10)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	conn, err := grpc.Dial(grpcPort, grpc.WithInsecure())
-	if err != nil {
-		log.Println(err)
-	}
-	defer conn.Close()
-
-	service := core.NewService(
-		dbRepo,
-		jwtauth.New(),
-		catalogpb.NewCatalogClient(conn),
-		kafka.NewProducer(kafkaHosts, log),
-	)
+	service := Init()
 
 	cons := consumer.Port{
-		Sub:     kafka.NewConsumer(kafkaHosts, log),
+		Sub:     kafka.NewConsumer(kafkaHosts),
 		Service: service,
-		Log:     log,
 	}
 	go cons.Run(context.Background())
 
-	r := route.New(log, true)
+	r := route.New(true)
 
 	r.Handle(service)
 
@@ -65,8 +46,8 @@ func main() {
 	}
 
 	go func() { // started http server
-		if err = srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
 		}
 	}()
 
@@ -74,14 +55,34 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("Shutting down server...")
+	log.Msg("shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server forced to shutdown:", err)
+		log.Fatal(err)
 	}
 
-	log.Println("Server exiting")
+	log.Msg("Server exiting")
+}
+
+func Init() core.CartService {
+	dbRepo, err := mysql.NewRepo(dsn, dbTable, 10)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	conn, err := grpc.Dial(grpcPort, grpc.WithInsecure())
+	if err != nil {
+		log.Error(err)
+	}
+	defer conn.Close()
+
+	return core.NewService(
+		dbRepo,
+		jwtauth.New(),
+		catalogpb.NewCatalogClient(conn),
+		kafka.NewProducer(kafkaHosts),
+	)
 }
