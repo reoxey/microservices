@@ -6,12 +6,13 @@ import (
 
 	"github.com/segmentio/kafka-go"
 
+	"cart/config"
 	"cart/core"
 	log "cart/logger"
 )
 
-func NewProducer(dsn []string) core.Publisher {
-	return &queue{dsn: dsn}
+func NewProducer(conf *config.Config) core.Publisher {
+	return &queue{dsn: conf.KafkaHosts}
 }
 
 func (q queue) Publish(ctx context.Context, msg *core.Message) error {

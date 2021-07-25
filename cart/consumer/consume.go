@@ -15,6 +15,13 @@ type Port struct {
 	Service core.CartService
 }
 
+func InitRun(sub core.Subscriber, serv core.CartService) *Port {
+	return &Port{
+		Sub:     sub,
+		Service: serv,
+	}
+}
+
 func (p *Port) Run(ctx context.Context) {
 
 	rec := make(chan *core.Message)

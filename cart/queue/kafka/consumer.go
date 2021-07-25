@@ -7,6 +7,7 @@ import (
 
 	"github.com/segmentio/kafka-go"
 
+	"cart/config"
 	"cart/core"
 	"cart/logger"
 )
@@ -42,8 +43,8 @@ func (q queue) Subscribe(ctx context.Context, topic string, rec chan *core.Messa
 	}
 }
 
-func NewConsumer(dsn []string) core.Subscriber {
+func NewConsumer(conf *config.Config) core.Subscriber {
 	return queue{
-		dsn: dsn,
+		dsn: conf.KafkaHosts,
 	}
 }

@@ -1,6 +1,8 @@
 package route
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 
 	"cart/api"
@@ -11,11 +13,9 @@ type Gin struct {
 	*gin.Engine
 }
 
-func New(debug bool) *Gin {
+func New(cs core.CartService) http.Handler {
 	g := gin.New()
-	if !debug {
-		gin.SetMode(gin.ReleaseMode)
-	}
+	gin.SetMode(gin.ReleaseMode)
 	g.Use(gin.Logger())
 	g.Use(gin.Recovery())
 	return &Gin{
@@ -23,7 +23,7 @@ func New(debug bool) *Gin {
 	}
 }
 
-func (g *Gin) Handle(cs core.CartService) {
+func (g *Gin) handle(cs core.CartService) {
 	ch := api.NewHandler(cs)
 
 	authRoute := g.Group("/api", ch.AuthorizeUser())
