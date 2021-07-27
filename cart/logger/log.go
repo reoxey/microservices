@@ -16,6 +16,23 @@ import (
 
 var x *l.Logger
 
+type GenericErr struct {
+	Code int
+	Err  error
+}
+
+func (c GenericErr) Error() string {
+	return c.Error()
+}
+
+type ValidationErr struct {
+	Err error
+}
+
+func (c ValidationErr) Error() string {
+	return c.Error()
+}
+
 func init() {
 	x = &l.Logger{}
 	x.SetFlags(l.LstdFlags)

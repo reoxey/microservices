@@ -8,20 +8,16 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
 	// "google.golang.org/grpc"
 
 	"cart/core"
 	// "cart/catalogpb"
 	"cart/jwtauth"
-	"cart/logger"
 	"cart/repo/mock"
 	"cart/route"
 )
 
-func ginServer() *gin.Engine {
-
-	log := logger.New()
+func ginServer() http.Handler {
 
 	// conn, err := grpc.Dial(":9001", grpc.WithInsecure())
 	// if err != nil {
@@ -37,11 +33,7 @@ func ginServer() *gin.Engine {
 		nil,
 	)
 
-	r := route.New(log, true)
-
-	r.Handle(service)
-
-	return r.Engine
+	return route.New(service)
 }
 
 func TestCart(t *testing.T) {
@@ -53,11 +45,11 @@ func TestCart(t *testing.T) {
 	defer ts.Close()
 
 	tests := []struct {
-		reason string
+		reason   string
 		endpoint string
-		method string
-		status int
-		payload io.Reader
+		method   string
+		status   int
+		payload  io.Reader
 	}{
 		{
 			"Should create a new cart with status 201",
