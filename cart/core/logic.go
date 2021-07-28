@@ -11,11 +11,11 @@ import (
 )
 
 type cartService struct {
-	repo     CartRepo
-	auth     JWTService
-	validate *validator.Validate
+	repo        CartRepo
+	auth        JWTService
+	validate    *validator.Validate
 	grpcCatalog catalogpb.CatalogClient
-	publisherQ Publisher
+	publisherQ  Publisher
 }
 
 func (c cartService) Authorize(s string) (map[string]interface{}, error) {
@@ -33,7 +33,7 @@ func (c cartService) AddToCart(ctx context.Context, cartId int, item *Item) (err
 
 	prod, err := c.grpcCatalog.GetProduct(ctx,
 		&catalogpb.ProductId{Id: int32(item.Id)},
-		)
+	)
 	if err != nil {
 		return
 	}
@@ -99,6 +99,13 @@ func (c cartService) Checkout(ctx context.Context, checkout *Checkout, cartId in
 
 	if err = c.publisherQ.Publish(ctx, &Message{
 		Topic: "order",
+		Msg:   str,
+	}); err != nil {
+		return err
+	}
+
+	if err = c.publisherQ.Publish(ctx, &Message{
+		Topic: "order_payment",
 		Msg:   str,
 	}); err != nil {
 		return err
