@@ -1,0 +1,121 @@
+version: "3"
+services:
+  mariadb:
+    build:
+      context: ./db
+    expose:
+      - 3306
+    environment:
+      MYSQL_USER: micro
+      MYSQL_PASSWORD: micro
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: micro
+
+  redis:
+    image: redis
+    expose:
+      - 6379
+
+  zookeeper:
+    image: bitnami/zookeeper:latest
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
+  kafka:
+    image: bitnami/kafka:latest
+    ports:
+      - '9092:9092'
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    depends_on:
+      - zookeeper
+
+  microfront:
+    build:
+      context: ./frontend
+    expose:
+      - 80
+    links:
+      - microuser
+
+  microuser:
+    build:
+      context: ./user
+    environment:
+      - DB_DSN="micro:micro@tcp(mariadb:3306)/micro"
+      - DB_TABLE=users
+      - REDIS=redis
+    expose:
+      - 8001
+    links:
+      - mariadb
+      - redis
+
+  microproduct:
+    build:
+      context: ./product
+    environment:
+      - DB_DSN="micro:micro@tcp(mariadb:3306)/micro"
+      - DB_TABLE=products
+      - REDIS=redis
+      - KAFKA_HOST=kafka
+    expose:
+      - 8002
+      - 9001
+    links:
+      - mariadb
+      - redis
+      - kafka
+
+  microshipping:
+    build:
+      context: ./shipping
+    environment:
+      - DB_DSN="micro:micro@tcp(mariadb:3306)/micro"
+      - DB_TABLE=shipping
+      - REDIS=redis
+      - KAFKA_HOST=kafka
+    expose:
+      - 8004
+    links:
+      - mariadb
+      - redis
+      - kafka
+
+  microcart:
+    build:
+      context: ./cart
+    environment:
+      - DB_DSN="micro:micro@tcp(mariadb:3306)/micro"
+      - DB_TABLE=carts
+      - REDIS=redis
+      - KAFKA_HOST=kafka
+      - PRODUCT_GRPC="microproduct:9001"
+    expose:
+      - 8003
+    links:
+      - mariadb
+      - redis
+      - kafka
+
+  microorder:
+    build:
+      context: ./order
+    environment:
+      - DB_DSN="micro:micro@tcp(mariadb:3306)/micro"
+      - DB_TABLE=orders
+      - REDIS=redis
+      - KAFKA_HOST=kafka
+    expose:
+      - 8005
+    links:
+      - mariadb
+      - redis
+      - kafka
