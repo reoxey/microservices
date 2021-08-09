@@ -31,3 +31,5 @@
 Kubernetes helm scripts are present in the `scripts` directory which are used in the project.
 `.http` can be used to test functionality of individual services. `ecom.http` will test the combined functionality of
 all services.
+
+or execute `docker-compose build & docker-compose -d up`
